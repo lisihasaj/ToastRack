@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-07-30
+
 ### Added
 
 - Initial release of ToastRack.
@@ -22,4 +24,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Theming via `--toastrack-*` CSS custom properties.
 - Thread-safe service suitable for Blazor Server and background workers.
 
-[Unreleased]: https://github.com/lisihasaj/ToastRack/commits/main
+[Unreleased]: https://github.com/lisihasaj/ToastRack/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/lisihasaj/ToastRack/releases/tag/v0.1.0
