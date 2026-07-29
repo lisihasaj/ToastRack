@@ -1,8 +1,8 @@
 namespace ToastRack;
 
 /// <summary>
-/// Manages the toasts displayed by the <c>ToastRackHost</c> component. Register via
-/// <c>services.AddToastRack()</c> and place a single <c>&lt;ToastRackHost /&gt;</c> in your layout.
+/// Manages the toasts displayed by the <c>ToastRack</c> component. Register via
+/// <c>services.AddToastRack()</c> and place a single <c>&lt;ToastRack /&gt;</c> in your layout.
 /// </summary>
 public interface IToastService
 {

@@ -32,12 +32,12 @@ Supports .NET 8, 9 and 10.
 builder.Services.AddToastRack();
 ```
 
-**2. Place the host** once in your layout (e.g. `MainLayout.razor`):
+**2. Place the component** once in your layout (e.g. `MainLayout.razor`):
 
 ```razor
 @using ToastRack.Components
 
-<ToastRackHost />
+<ToastRack />
 ```
 
 ToastRack's styles ship as scoped CSS, so make sure your `index.html` / `App.razor` links the CSS bundle
@@ -52,10 +52,19 @@ ToastRack's styles ship as scoped CSS, so make sure your `index.html` / `App.raz
 ```csharp
 @inject IToastService Toasts
 
+Toasts.Success("Saved", "Your changes were saved successfully.");
+Toasts.Error("Upload failed");
+Toasts.Info("Heads up", position: ToastPosition.TopRight);
+```
+
+Need actions, custom icons, expiry control or dedupe ids? Use the options-based methods:
+
+```csharp
 Toasts.ShowSuccessToast(new ToastOptions
 {
     Title = "Saved",
     Caption = "Your changes were saved successfully.",
+    Expiry = 10,
 });
 ```
 
@@ -64,11 +73,8 @@ Toasts.ShowSuccessToast(new ToastOptions
 ### Positions
 
 ```csharp
-Toasts.ShowInfoToast(new ToastOptions
-{
-    Title = "Top right",
-    Position = ToastPosition.TopRight, // TopLeft, TopRight, BottomLeft, BottomRight, BottomCenter
-});
+// TopLeft, TopRight, BottomLeft, BottomRight, BottomCenter
+Toasts.Info("Top right", position: ToastPosition.TopRight);
 ```
 
 ### Action buttons
@@ -90,18 +96,13 @@ Toasts.ShowInfoToast(new ToastOptions
 ### Loading toast with progress
 
 ```csharp
-Toasts.ShowLoadingToast(new LoadingToastOptions { ToastId = "upload", Title = "Uploading...", IsProgress = true });
+Toasts.Loading("upload", "Uploading...", showProgress: true);
 
 // as the work progresses:
-Toasts.UpdateLoadingToastProgress(new ToastProgressUpdate { ToastId = "upload", Percentage = 60 });
+Toasts.Progress("upload", 60);
 
 // when done:
-Toasts.ResolveLoadingToast(new ResolveToastOptions
-{
-    ToastId = "upload",
-    ReplaceWith = ToastVariant.Success, // or Error / Warning / Info
-    Title = "Uploaded",
-});
+Toasts.Resolve("upload", ToastVariant.Success, "Uploaded"); // or Error / Warning / Info
 ```
 
 ### Custom icon or fully custom content
@@ -124,7 +125,7 @@ If your app has a fixed sidebar or header, anchor toasts to the main content ele
 The element is tracked with a `ResizeObserver` — no manual wiring needed:
 
 ```razor
-<ToastRackHost BoundarySelector="main" />
+<ToastRack BoundarySelector="main" />
 ```
 
 ### Deduplication and programmatic removal
@@ -184,6 +185,8 @@ in your app's CSS (e.g. on `:root`):
 
 | Member | Description |
 |---|---|
+| `Success` / `Warning` / `Error` / `Info` `(title, caption?, position?)` | One-line shorthands |
+| `Loading(id, title, caption?, showProgress?)` / `Progress(id, percentage)` / `Resolve(id, variant?, title?, caption?)` | Loading-toast shorthands |
 | `ShowToast(ToastOptions)` | Show a toast (default variant `Success`) |
 | `ShowSuccessToast` / `ShowWarningToast` / `ShowErrorToast` / `ShowInfoToast` | Variant shorthands |
 | `ShowLoadingToast(LoadingToastOptions)` | Top-center loading toast, never auto-expires |

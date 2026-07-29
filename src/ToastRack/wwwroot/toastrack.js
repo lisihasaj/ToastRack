@@ -1,4 +1,4 @@
-// ToastRack JS interop module. Loaded lazily by the ToastRackHost component via
+// ToastRack JS interop module. Loaded lazily by the ToastRack component via
 // import('./_content/ToastRack/toastrack.js').
 
 const outsideClickHandlers = new Map();
