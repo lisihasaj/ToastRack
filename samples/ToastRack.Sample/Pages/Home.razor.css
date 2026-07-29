@@ -1,0 +1,22 @@
+.demo-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.demo-select {
+  width: auto;
+  display: inline-block;
+}
+
+.hint {
+  color: #6c757d;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+h4 {
+  margin-top: 1rem;
+}

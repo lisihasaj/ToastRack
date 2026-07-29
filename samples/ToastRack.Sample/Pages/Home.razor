@@ -1,0 +1,185 @@
+@page "/"
+@inject IToastService Toasts
+
+<PageTitle>ToastRack demo</PageTitle>
+
+<h1>🍞 ToastRack</h1>
+<p class="lead">
+    A lightweight, dependency-free toast notification library for Blazor.
+    Toasts are anchored to the <code>&lt;main&gt;</code> element on this page
+    (via <code>BoundarySelector</code>), so they respect the sidebar — resize the window to see them follow.
+</p>
+
+<h4>Variants</h4>
+<div class="demo-row">
+    <select class="form-select demo-select" @bind="_position">
+        <option value="@ToastPosition.TopLeft">Top left</option>
+        <option value="@ToastPosition.TopRight">Top right</option>
+        <option value="@ToastPosition.BottomLeft">Bottom left</option>
+        <option value="@ToastPosition.BottomRight">Bottom right</option>
+        <option value="@ToastPosition.BottomCenter">Bottom center</option>
+    </select>
+    <button class="btn btn-success" @onclick="ShowSuccess">Success</button>
+    <button class="btn btn-warning" @onclick="ShowWarning">Warning</button>
+    <button class="btn btn-danger" @onclick="ShowError">Error (no auto-expiry)</button>
+    <button class="btn btn-primary" @onclick="ShowInfo">Info</button>
+</div>
+
+<h4>Actions &amp; custom content</h4>
+<div class="demo-row">
+    <button class="btn btn-outline-primary" @onclick="ShowActionToast">With actions (Undo)</button>
+    <button class="btn btn-outline-primary" @onclick="ShowCustomIconToast">Custom icon</button>
+    <button class="btn btn-outline-primary" @onclick="ShowCustomFragmentToast">Custom fragment</button>
+</div>
+
+<h4>Loading toasts</h4>
+<p class="hint">Start several to see them collapse into a single "Processing..." pill (hover/click it to expand).</p>
+<div class="demo-row">
+    <button class="btn btn-outline-secondary" @onclick="ShowLoadingToast">Indeterminate (resolves in 4s)</button>
+    <button class="btn btn-outline-secondary" @onclick="ShowProgressToast">With progress (resolves at 100%)</button>
+    <button class="btn btn-outline-danger" @onclick="ShowFailingLoadingToast">Failing task (resolves as error)</button>
+</div>
+
+@if (_undoMessage is not null)
+{
+    <div class="alert alert-info mt-3">@_undoMessage</div>
+}
+
+@code {
+    private ToastPosition _position = ToastPosition.BottomLeft;
+    private int _counter;
+    private string? _undoMessage;
+
+    private void ShowSuccess() =>
+        Toasts.ShowSuccessToast(new ToastOptions
+        {
+            Title = "Saved",
+            Caption = "Your changes were saved successfully.",
+            Position = _position,
+        });
+
+    private void ShowWarning() =>
+        Toasts.ShowWarningToast(new ToastOptions
+        {
+            Title = "Heads up",
+            Caption = "This file was modified by someone else.",
+            Position = _position,
+        });
+
+    private void ShowError() =>
+        Toasts.ShowErrorToast(new ToastOptions
+        {
+            Title = "Something went wrong",
+            Caption = "The request failed. Error toasts stay until dismissed.",
+            Position = _position,
+        });
+
+    private void ShowInfo() =>
+        Toasts.ShowInfoToast(new ToastOptions
+        {
+            Title = "Did you know?",
+            Caption = "You can hover a toast to pause its expiry timer.",
+            Position = _position,
+        });
+
+    private void ShowActionToast() =>
+        Toasts.ShowInfoToast(new ToastOptions
+        {
+            Title = "Item deleted",
+            Caption = "The item was removed from your list.",
+            Position = _position,
+            Actions =
+            [
+                new ToastAction
+                {
+                    Id = "undo",
+                    Label = "Undo",
+                    Style = ToastActionStyle.Primary,
+                    OnClick = () => _undoMessage = "Undo clicked — item restored!",
+                },
+                new ToastAction
+                {
+                    Id = "dismiss",
+                    Label = "Dismiss",
+                    Style = ToastActionStyle.Text,
+                },
+            ],
+        });
+
+    private void ShowCustomIconToast() =>
+        Toasts.ShowSuccessToast(new ToastOptions
+        {
+            Title = "Custom icon",
+            Caption = "Any RenderFragment works as the icon.",
+            Position = _position,
+            Icon = @<span style="font-size: 1.1rem;">🎉</span>,
+        });
+
+    private void ShowCustomFragmentToast() =>
+        Toasts.ShowToast(new ToastOptions
+        {
+            Variant = ToastVariant.Custom,
+            Position = _position,
+            Fragment = @<div style="padding: 1rem; background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                           <strong>Fully custom content</strong>
+                           <div>The toast shell only provides shadow, radius and stacking.</div>
+                       </div>,
+        });
+
+    private async Task ShowLoadingToast()
+    {
+        var id = $"loading-{++_counter}";
+        Toasts.ShowLoadingToast(new LoadingToastOptions { ToastId = id, Title = $"Loading data #{_counter}..." });
+
+        await Task.Delay(4000);
+
+        Toasts.ResolveLoadingToast(new ResolveToastOptions
+        {
+            ToastId = id,
+            ReplaceWith = ToastVariant.Success,
+            Title = "Loaded",
+            Caption = $"Task #{_counter} finished.",
+        });
+    }
+
+    private async Task ShowProgressToast()
+    {
+        var id = $"progress-{++_counter}";
+        Toasts.ShowLoadingToast(new LoadingToastOptions
+        {
+            ToastId = id,
+            Title = $"Uploading file #{_counter}...",
+            IsProgress = true,
+        });
+
+        for (var percentage = 10; percentage <= 100; percentage += 10)
+        {
+            await Task.Delay(400);
+            Toasts.UpdateLoadingToastProgress(new ToastProgressUpdate { ToastId = id, Percentage = percentage });
+        }
+
+        Toasts.ResolveLoadingToast(new ResolveToastOptions
+        {
+            ToastId = id,
+            ReplaceWith = ToastVariant.Success,
+            Title = "Uploaded",
+            Caption = "Your file was uploaded.",
+        });
+    }
+
+    private async Task ShowFailingLoadingToast()
+    {
+        var id = $"failing-{++_counter}";
+        Toasts.ShowLoadingToast(new LoadingToastOptions { ToastId = id, Title = $"Syncing #{_counter}..." });
+
+        await Task.Delay(2500);
+
+        Toasts.ResolveLoadingToast(new ResolveToastOptions
+        {
+            ToastId = id,
+            ReplaceWith = ToastVariant.Error,
+            Title = "Sync failed",
+            Caption = "The server did not respond.",
+        });
+    }
+}

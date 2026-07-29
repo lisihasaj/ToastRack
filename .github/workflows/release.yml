@@ -1,0 +1,65 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write # create the GitHub Release
+  id-token: write # NuGet.org Trusted Publishing (OIDC)
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: nuget # optional: gate releases behind an environment approval
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+
+      - name: Build
+        run: dotnet build --configuration Release -p:ContinuousIntegrationBuild=true
+
+      - name: Test
+        run: dotnet test --configuration Release --no-build
+
+      - name: Pack
+        run: >
+          dotnet pack src/ToastRack/ToastRack.csproj
+          --configuration Release --no-build
+          -p:ContinuousIntegrationBuild=true
+          --output artifacts
+
+      # Preferred: NuGet.org Trusted Publishing (configure the repo+workflow on nuget.org,
+      # no long-lived API key needed). This action exchanges the GitHub OIDC token for a
+      # short-lived NuGet API key.
+      - name: NuGet login (Trusted Publishing)
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ vars.NUGET_USER }}
+
+      - name: Push to NuGet.org
+        run: >
+          dotnet nuget push artifacts/*.nupkg
+          --source https://api.nuget.org/v3/index.json
+          --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
+          --skip-duplicate
+
+      # Fallback if you prefer a classic API key instead of Trusted Publishing:
+      # delete the two steps above and use:
+      #   --api-key ${{ secrets.NUGET_API_KEY }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*.*nupkg
+          generate_release_notes: true
