@@ -4,7 +4,7 @@ using ToastRack.Components;
 
 namespace ToastRack.Tests;
 
-public class ToastRackHostTests : TestContext
+public class ToastRackHostTests : BunitContext
 {
     private readonly ToastService _toastService = new();
     private readonly BunitJSModuleInterop _module;
@@ -19,7 +19,7 @@ public class ToastRackHostTests : TestContext
     [Fact]
     public void Host_RendersNothing_WhenNoToasts()
     {
-        var component = RenderComponent<ToastRackHost>();
+        var component = Render<ToastRackHost>();
 
         Assert.DoesNotContain("toastrack--", component.Markup);
         Assert.DoesNotContain("toastrack-loading", component.Markup);
@@ -35,7 +35,7 @@ public class ToastRackHostTests : TestContext
             Position = ToastPosition.BottomCenter,
         });
 
-        var component = RenderComponent<ToastRackHost>();
+        var component = Render<ToastRackHost>();
 
         Assert.Contains("toastrack--bottom-center", component.Markup);
         Assert.Contains("id=\"toastrackBottomCenter\"", component.Markup);
@@ -54,7 +54,7 @@ public class ToastRackHostTests : TestContext
             Position = ToastPosition.TopRight,
         });
 
-        var component = RenderComponent<ToastRackHost>();
+        var component = Render<ToastRackHost>();
 
         Assert.Contains("toastrack--top-right", component.Markup);
         Assert.Contains("toastrack-animate-slide-down", component.Markup);
@@ -66,7 +66,7 @@ public class ToastRackHostTests : TestContext
         _toastService.ShowInfoToast(new ToastOptions { ToastId = "a", Title = "TopLeftToast", Position = ToastPosition.TopLeft });
         _toastService.ShowInfoToast(new ToastOptions { ToastId = "b", Title = "BottomRightToast", Position = ToastPosition.BottomRight });
 
-        var component = RenderComponent<ToastRackHost>();
+        var component = Render<ToastRackHost>();
 
         Assert.Contains("toastrack--top-left", component.Markup);
         Assert.Contains("toastrack--bottom-right", component.Markup);
@@ -76,7 +76,7 @@ public class ToastRackHostTests : TestContext
     [Fact]
     public void Host_ReRendersWhenToastAdded()
     {
-        var component = RenderComponent<ToastRackHost>();
+        var component = Render<ToastRackHost>();
         Assert.DoesNotContain("toastrack--", component.Markup);
 
         // Adding a toast raises ToastsUpdated, which the component subscribes to.
@@ -90,7 +90,7 @@ public class ToastRackHostTests : TestContext
     {
         _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Title = "Loading one" });
 
-        var component = RenderComponent<ToastRackHost>();
+        var component = Render<ToastRackHost>();
 
         Assert.Contains("id=\"toastrack-loading\"", component.Markup);
         Assert.Contains("Loading one", component.Markup);
@@ -103,7 +103,7 @@ public class ToastRackHostTests : TestContext
     {
         _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Title = "Exporting", IsProgress = true });
 
-        var component = RenderComponent<ToastRackHost>();
+        var component = Render<ToastRackHost>();
 
         Assert.Contains("id=\"toastrack-loading\"", component.Markup);
         Assert.Contains("toastrack-toast__progress-circle", component.Markup);
@@ -115,7 +115,7 @@ public class ToastRackHostTests : TestContext
     {
         _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Title = "Exporting", IsProgress = true });
 
-        var component = RenderComponent<ToastRackHost>();
+        var component = Render<ToastRackHost>();
 
         _toastService.UpdateLoadingToastProgress(new ToastProgressUpdate
         {
@@ -132,7 +132,7 @@ public class ToastRackHostTests : TestContext
         _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Title = "First", IsProgress = true });
         _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l2", Title = "Second", IsProgress = true });
 
-        var component = RenderComponent<ToastRackHost>();
+        var component = Render<ToastRackHost>();
 
         // The collapsed placeholder aggregates several toasts, so it has no single
         // percentage to show and falls back to the indeterminate spinner.
@@ -147,7 +147,7 @@ public class ToastRackHostTests : TestContext
         _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l2", Title = "Second", IsProgress = true });
         _toastService.UpdateLoadingToastProgress(new ToastProgressUpdate { ToastId = "l2", Percentage = 80 });
 
-        var component = RenderComponent<ToastRackHost>();
+        var component = Render<ToastRackHost>();
         component.Find("#toastrack-loading").MouseEnter();
 
         Assert.Equal(2, component.FindAll(".toastrack-toast__progress-circle").Count);
@@ -161,7 +161,7 @@ public class ToastRackHostTests : TestContext
         _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Title = "First" });
         _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l2", Title = "Second" });
 
-        var component = RenderComponent<ToastRackHost>();
+        var component = Render<ToastRackHost>();
 
         // Collapsed placeholder shows the aggregate title + count, individual titles are hidden.
         Assert.Contains("Processing...", component.Markup);
@@ -177,7 +177,7 @@ public class ToastRackHostTests : TestContext
         _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Title = "First" });
         _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l2", Title = "Second" });
 
-        var component = RenderComponent<ToastRackHost>(parameters =>
+        var component = Render<ToastRackHost>(parameters =>
             parameters.Add(p => p.CollapsedLoadingTitle, "Wird verarbeitet..."));
 
         Assert.Contains("Wird verarbeitet...", component.Markup);
@@ -190,7 +190,7 @@ public class ToastRackHostTests : TestContext
         _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Title = "First" });
         _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l2", Title = "Second" });
 
-        var component = RenderComponent<ToastRackHost>();
+        var component = Render<ToastRackHost>();
         component.Find("#toastrack-loading").MouseEnter();
 
         // Hovering expands the stack to show each loading toast.
@@ -205,7 +205,7 @@ public class ToastRackHostTests : TestContext
         _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Title = "First" });
         _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l2", Title = "Second" });
 
-        var component = RenderComponent<ToastRackHost>();
+        var component = Render<ToastRackHost>();
         var container = component.Find("#toastrack-loading");
         container.MouseEnter();
         Assert.Contains("First", component.Markup);
@@ -222,7 +222,7 @@ public class ToastRackHostTests : TestContext
         _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Title = "First" });
         _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l2", Title = "Second" });
 
-        var component = RenderComponent<ToastRackHost>();
+        var component = Render<ToastRackHost>();
         component.Find("#toastrack-loading").Click();
 
         component.WaitForAssertion(() => _module.VerifyInvoke("registerOutsideClick"));
@@ -235,7 +235,7 @@ public class ToastRackHostTests : TestContext
         _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Title = "First" });
         _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l2", Title = "Second" });
 
-        var component = RenderComponent<ToastRackHost>();
+        var component = Render<ToastRackHost>();
         var container = component.Find("#toastrack-loading");
 
         container.Click();
@@ -250,7 +250,7 @@ public class ToastRackHostTests : TestContext
     {
         _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Title = "Only" });
 
-        var component = RenderComponent<ToastRackHost>();
+        var component = Render<ToastRackHost>();
         component.Find("#toastrack-loading").Click();
 
         // With a single loading toast, clicking is a no-op — no outside-click handler is registered.
@@ -260,7 +260,7 @@ public class ToastRackHostTests : TestContext
     [Fact]
     public void Host_ScrollsTopGroupsToBottomAfterRender()
     {
-        var component = RenderComponent<ToastRackHost>();
+        var component = Render<ToastRackHost>();
 
         // Scrolling is triggered by the ToastsUpdated handler, so add the toast after the first render.
         _toastService.ShowInfoToast(new ToastOptions { ToastId = "top", Title = "TopToast", Position = ToastPosition.TopRight });
@@ -274,7 +274,7 @@ public class ToastRackHostTests : TestContext
     [Fact]
     public void Host_WithoutBoundary_DoesNotObserve()
     {
-        RenderComponent<ToastRackHost>();
+        Render<ToastRackHost>();
 
         Assert.DoesNotContain(_module.Invocations, i => i.Identifier == "observeBoundary");
     }
@@ -284,7 +284,7 @@ public class ToastRackHostTests : TestContext
     {
         _module.Setup<bool>("observeBoundary", _ => true).SetResult(true);
 
-        var component = RenderComponent<ToastRackHost>(parameters =>
+        var component = Render<ToastRackHost>(parameters =>
             parameters.Add(p => p.BoundarySelector, "#main-content"));
 
         component.WaitForAssertion(() => _module.VerifyInvoke("observeBoundary"));
@@ -300,7 +300,7 @@ public class ToastRackHostTests : TestContext
             Position = ToastPosition.BottomRight,
         });
 
-        var component = RenderComponent<ToastRackHost>();
+        var component = Render<ToastRackHost>();
 
         component.Instance.OnBoundaryChanged(new BoundaryRect
         {
@@ -324,7 +324,7 @@ public class ToastRackHostTests : TestContext
         _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Title = "First" });
         _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l2", Title = "Second" });
 
-        var component = RenderComponent<ToastRackHost>();
+        var component = Render<ToastRackHost>();
         component.Find("#toastrack-loading").Click();
 
         // Wait for the click to register the handler before disposing.
