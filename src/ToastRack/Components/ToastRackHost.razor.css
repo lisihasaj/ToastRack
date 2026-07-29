@@ -1,0 +1,95 @@
+.toastrack {
+  position: fixed;
+  width: clamp(16rem, 100%, 21rem);
+  max-height: 100dvh;
+  overflow-y: auto;
+  z-index: var(--toastrack-z-index, 2000);
+  display: flex;
+  flex-direction: column;
+  gap: var(--toastrack-stack-gap, 0.5rem);
+  transition: all var(--toastrack-transition, 0.2s ease);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.toastrack::-webkit-scrollbar {
+  display: none;
+}
+
+/* Viewport-anchored defaults (no boundary element) */
+
+.toastrack--top-left {
+  top: 0;
+  left: 0;
+  padding-top: var(--toastrack-edge-gap, 0.5rem);
+  padding-left: var(--toastrack-edge-gap, 0.5rem);
+}
+
+.toastrack--top-right {
+  top: 0;
+  right: 0;
+  padding-top: var(--toastrack-edge-gap, 0.5rem);
+  padding-right: var(--toastrack-edge-gap, 0.5rem);
+}
+
+.toastrack--bottom-left {
+  bottom: 0;
+  left: 0;
+  padding-bottom: var(--toastrack-edge-gap, 0.5rem);
+  padding-left: var(--toastrack-edge-gap, 0.5rem);
+}
+
+.toastrack--bottom-right {
+  bottom: 0;
+  right: 0;
+  padding-bottom: var(--toastrack-edge-gap, 0.5rem);
+  padding-right: var(--toastrack-edge-gap, 0.5rem);
+}
+
+.toastrack--bottom-center {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  padding-bottom: var(--toastrack-edge-gap, 0.5rem);
+}
+
+.toastrack--top-center {
+  top: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  padding-top: var(--toastrack-edge-gap, 0.5rem);
+}
+
+/* Boundary mode: inline styles provide left/top/max-height; transforms shift the
+   container so left/top always refer to the matching corner of the boundary. */
+
+.toastrack--bound.toastrack--top-left {
+  right: auto;
+  bottom: auto;
+  transform: none;
+}
+
+.toastrack--bound.toastrack--top-right {
+  right: auto;
+  bottom: auto;
+  transform: translateX(-100%);
+}
+
+.toastrack--bound.toastrack--bottom-left {
+  right: auto;
+  bottom: auto;
+  transform: translateY(-100%);
+}
+
+.toastrack--bound.toastrack--bottom-right {
+  right: auto;
+  bottom: auto;
+  transform: translate(-100%, -100%);
+}
+
+.toastrack--bound.toastrack--bottom-center {
+  right: auto;
+  bottom: auto;
+  transform: translate(-50%, -100%);
+}

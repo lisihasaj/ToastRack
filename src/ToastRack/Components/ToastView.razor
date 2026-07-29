@@ -1,0 +1,243 @@
+@namespace ToastRack.Components
+@inject IToastService ToastService
+
+@implements IDisposable
+
+<div class="@string.Join(' ', new[] { "toastrack-toast", AnimationClass, VariantClass(Item.Variant) }.Where(c => !string.IsNullOrEmpty(c)))"
+     role="@(Item.Variant is ToastVariant.Error ? "alert" : "status")"
+     @onclick="@HandleBodyClose"
+     @onmouseenter="@HandleMouseEnter"
+     @onmouseleave="@HandleMouseLeave">
+    @switch (Item.Variant)
+    {
+        case ToastVariant.Loading:
+        case ToastVariant.LoadingCollapsed:
+            <div class="toastrack-toast__loading">
+                @if (Item.IsProgress)
+                {
+                    <div class="toastrack-toast__progress-circle"
+                         style="@($"--toastrack-progress: {Math.Clamp(Item.Percentage, 0, 100)}%;")"
+                         role="progressbar"
+                         aria-valuenow="@Math.Clamp(Item.Percentage, 0, 100)"
+                         aria-valuemin="0"
+                         aria-valuemax="100"></div>
+                }
+                else
+                {
+                    <div class="toastrack-spinner" aria-hidden="true"></div>
+                }
+            </div>
+            <span class="toastrack-toast__title">@Item.Title</span>
+            if (LoadingToastsCount > 1)
+            {
+                <span class="toastrack-toast__count">@LoadingToastsCount</span>
+            }
+
+            break;
+        case ToastVariant.Custom:
+            @Item.Fragment
+            break;
+        default:
+            <div class="toastrack-toast__accent"></div>
+            <div class="toastrack-toast__icon">
+                @if (Item.Icon is not null)
+                {
+                    @Item.Icon
+                }
+                else
+                {
+                    @ToastIcons.For(Item.Variant)
+                }
+            </div>
+            if (!string.IsNullOrEmpty(Item.Title) || !string.IsNullOrEmpty(Item.Caption))
+            {
+                <div class="toastrack-toast__content">
+                    @if (!string.IsNullOrEmpty(Item.Title))
+                    {
+                        <span class="toastrack-toast__title">@Item.Title</span>
+                    }
+                    @if (!string.IsNullOrEmpty(Item.Caption))
+                    {
+                        <span class="toastrack-toast__caption">@Item.Caption</span>
+                    }
+                    @if (Item.Actions is not null && Item.Actions.Count > 0)
+                    {
+                        <div class="toastrack-toast__actions">
+                            @foreach (var action in Item.Actions)
+                            {
+                                <button id="@action.Id"
+                                        type="button"
+                                        class="@ActionClass(action)"
+                                        title="@action.Tooltip"
+                                        disabled="@action.IsDisabled"
+                                        @onclick="@(() => HandleToastActionClick(action))"
+                                        @onclick:stopPropagation="true">
+                                    @action.Icon
+                                    @action.Label
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+
+            <button type="button"
+                    class="toastrack-toast__close"
+                    aria-label="Close notification"
+                    @onclick="@HandleClose"
+                    @onclick:stopPropagation="true">
+                @ToastIcons.Close
+            </button>
+            break;
+    }
+</div>
+
+@code {
+    /// <summary>The toast to render.</summary>
+    [Parameter, EditorRequired] public required ToastItem Item { get; set; }
+
+    /// <summary>CSS class applied for the entry animation.</summary>
+    [Parameter] public string? AnimationClass { get; set; }
+
+    /// <summary>Number of active loading toasts, shown as a badge on the collapsed loading toast.</summary>
+    [Parameter] public int? LoadingToastsCount { get; set; }
+
+    private Timer? _expiryTimer;
+    private bool _disposed;
+    private bool _isHovered;
+    private bool _expiredWhileHovered;
+    private TimeSpan _remainingOnPause;
+
+    private bool CanPauseOnHover =>
+        Item.ExpiresAt != DateTimeOffset.MaxValue
+        && Item.Variant is not (ToastVariant.Loading or ToastVariant.LoadingCollapsed or ToastVariant.Error);
+
+    private static string VariantClass(ToastVariant variant)
+    {
+        if (variant is ToastVariant.Custom)
+        {
+            return "toastrack-toast--custom";
+        }
+
+        var specificClass = variant switch
+        {
+            ToastVariant.Success => "toastrack-toast--success",
+            ToastVariant.Warning => "toastrack-toast--warning",
+            ToastVariant.Error => "toastrack-toast--error",
+            ToastVariant.Info => "toastrack-toast--info",
+            ToastVariant.LoadingCollapsed => "toastrack-toast--loading-collapsed",
+            ToastVariant.Loading => "toastrack-toast--loading",
+            _ => "toastrack-toast--info",
+        };
+
+        return $"toastrack-toast--defined {specificClass}";
+    }
+
+    private static string ActionClass(ToastAction action)
+    {
+        var styleClass = action.Style switch
+        {
+            ToastActionStyle.Primary => "toastrack-action--primary",
+            ToastActionStyle.Outline => "toastrack-action--outline",
+            _ => "toastrack-action--text",
+        };
+
+        return string.IsNullOrEmpty(action.CssClass)
+            ? $"toastrack-action {styleClass}"
+            : $"toastrack-action {styleClass} {action.CssClass}";
+    }
+
+    protected override void OnInitialized()
+    {
+        StartExpiryTimer();
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        _disposed = true;
+        _expiryTimer?.Dispose();
+    }
+
+    private void StartExpiryTimer()
+    {
+        if (Item.ExpiresAt == DateTimeOffset.MaxValue) return;
+
+        var remaining = Item.ExpiresAt - DateTimeOffset.UtcNow;
+        if (remaining <= TimeSpan.Zero)
+        {
+            HandleExpiry();
+            return;
+        }
+
+        if (_expiryTimer is not null)
+        {
+            _expiryTimer.Change(remaining, Timeout.InfiniteTimeSpan);
+            return;
+        }
+
+        _expiryTimer = new Timer(_ => _ = InvokeAsync(HandleExpiry), null, remaining, Timeout.InfiniteTimeSpan);
+    }
+
+    private void HandleExpiry()
+    {
+        if (_isHovered)
+        {
+            _expiredWhileHovered = true;
+            return;
+        }
+
+        HandleClose();
+    }
+
+    private void HandleMouseEnter()
+    {
+        if (!CanPauseOnHover) return;
+
+        _isHovered = true;
+
+        _remainingOnPause = Item.ExpiresAt - DateTimeOffset.UtcNow;
+        _expiryTimer?.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+    }
+
+    private void HandleMouseLeave()
+    {
+        if (!CanPauseOnHover || !_isHovered) return;
+
+        _isHovered = false;
+
+        if (_expiredWhileHovered)
+        {
+            HandleClose();
+            return;
+        }
+
+        Item.ExpiresAt = DateTimeOffset.UtcNow + _remainingOnPause;
+        StartExpiryTimer();
+    }
+
+    private void HandleClose()
+    {
+        if (_disposed) return;
+        ToastService.RemoveToast(Item);
+    }
+
+    private void HandleBodyClose()
+    {
+        if (!Item.CloseByClick) return;
+        HandleClose();
+    }
+
+    private async Task HandleToastActionClick(ToastAction action)
+    {
+        action.OnClick?.Invoke();
+
+        if (action.OnClickAsync is not null)
+        {
+            await action.OnClickAsync.Invoke();
+        }
+
+        HandleClose();
+    }
+
+}

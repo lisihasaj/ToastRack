@@ -1,0 +1,70 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <RootNamespace>ToastRack</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <!-- Package identity -->
+  <PropertyGroup>
+    <PackageId>ToastRack</PackageId>
+    <Title>ToastRack</Title>
+    <Authors>Lisjan Hasaj</Authors>
+    <Description>A lightweight, dependency-free toast notification library for Blazor (WebAssembly and Server). Success/warning/error/info variants, loading toasts with determinate progress, action buttons, hover-to-pause, stacking per position, custom content, and full CSS-variable theming.</Description>
+    <PackageTags>blazor;toast;toaster;notification;notifications;snackbar;components;webassembly;wasm;blazor-server</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/lisihasaj/ToastRack</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/lisihasaj/ToastRack</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageReleaseNotes>See https://github.com/lisihasaj/ToastRack/blob/main/CHANGELOG.md</PackageReleaseNotes>
+  </PropertyGroup>
+
+  <!-- Build quality, supply chain and debugging experience -->
+  <PropertyGroup>
+    <!-- SourceLink (built into the .NET 8+ SDK) -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <!-- Symbol package published alongside the nupkg -->
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <!-- Validate the package on pack (baseline version added after first stable release) -->
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <!-- Strong naming (key is intentionally checked in, per OSS guidance) -->
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>ToastRack.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
+  <!-- Version is derived from git tags (v*) by MinVer -->
+  <PropertyGroup>
+    <MinVerTagPrefix>v</MinVerTagPrefix>
+    <!-- Pre-release versions before the first tag start at 0.1.0-alpha.x -->
+    <MinVerMinimumMajorMinor>0.1</MinVerMinimumMajorMinor>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MinVer" Version="6.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.11" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="icon.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+</Project>
