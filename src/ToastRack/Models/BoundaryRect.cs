@@ -2,7 +2,7 @@ namespace ToastRack;
 
 /// <summary>
 /// The bounding rectangle (viewport coordinates, CSS pixels) of the element toasts are
-/// positioned within when <c>ToastRackHost.BoundarySelector</c> is set.
+/// positioned within when <c>ToastRack.BoundarySelector</c> is set.
 /// </summary>
 public sealed class BoundaryRect
 {
