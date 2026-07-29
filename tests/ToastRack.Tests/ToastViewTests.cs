@@ -3,7 +3,7 @@ using ToastRack.Components;
 
 namespace ToastRack.Tests;
 
-public class ToastViewTests : TestContext
+public class ToastViewTests : BunitContext
 {
     private readonly ToastService _toastService = new();
 
@@ -15,7 +15,7 @@ public class ToastViewTests : TestContext
     private IRenderedComponent<ToastView> RenderToast(
         ToastItem item, string? animationClass = null, int? loadingCount = null)
     {
-        return RenderComponent<ToastView>(parameters =>
+        return Render<ToastView>(parameters =>
         {
             parameters.Add(p => p.Item, item);
             if (animationClass is not null)
