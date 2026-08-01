@@ -7,11 +7,10 @@
 A lightweight, **dependency-free** toast notification library for Blazor — WebAssembly and Server.
 
 - ✅ Success / warning / error / info variants with built-in inline SVG icons (no icon font needed)
-- ⏳ Loading toasts with indeterminate spinner **or determinate progress circle**, resolved into a regular toast when the work finishes
-- 🗂 Multiple loading toasts collapse into a single "Processing…" pill (hover or click to expand)
+- ⏳ Loading toasts with indeterminate spinner **or determinate progress circle**, resolved into a regular toast when the work finishes — they stack at any position alongside every other variant
 - 🔘 Action buttons (undo / retry / …) — toasts with actions never auto-expire
 - ⏸ Hover to pause the expiry timer
-- 📍 Five stacking positions, plus an optional **boundary element**: anchor toasts to your content area (e.g. next to a sidebar) instead of the viewport, tracked automatically with a `ResizeObserver`
+- 📍 Six stacking positions (all four corners plus top/bottom center), plus an optional **boundary element**: anchor toasts to your content area (e.g. next to a sidebar) instead of the viewport, tracked automatically with a `ResizeObserver`
 - 🎨 Fully themable via `--toastrack-*` CSS custom properties
 - 🧩 Custom icon or fully custom toast content via `RenderFragment`
 - ♿ `role="status"` / `role="alert"`, progressbar ARIA attributes, `prefers-reduced-motion` support
@@ -73,8 +72,9 @@ Toasts.ShowSuccessToast(new ToastOptions
 ### Positions
 
 ```csharp
-// TopLeft, TopRight, BottomLeft, BottomRight, BottomCenter
+// TopLeft, TopCenter, TopRight, BottomLeft, BottomCenter, BottomRight
 Toasts.Info("Top right", position: ToastPosition.TopRight);
+Toasts.Loading("sync", "Syncing...", position: ToastPosition.TopCenter);
 ```
 
 ### Action buttons
@@ -96,14 +96,17 @@ Toasts.ShowInfoToast(new ToastOptions
 ### Loading toast with progress
 
 ```csharp
-Toasts.Loading("upload", "Uploading...", showProgress: true);
+Toasts.Loading("upload", "Uploading...", showProgress: true, position: ToastPosition.TopRight);
 
 // as the work progresses:
 Toasts.Progress("upload", 60);
 
-// when done:
+// when done — the result toast keeps the loading toast's position unless you pass one:
 Toasts.Resolve("upload", ToastVariant.Success, "Uploaded"); // or Error / Warning / Info
 ```
+
+Loading toasts stack at their position in insertion order like every other variant.
+They never auto-expire and are dismissed by resolving or removing them.
 
 ### Custom icon or fully custom content
 
@@ -162,6 +165,7 @@ in your app's CSS (e.g. on `:root`):
 | `--toastrack-gap` | `0.5rem` | Gap between icon / content / close |
 | `--toastrack-stack-gap` | `0.5rem` | Gap between stacked toasts |
 | `--toastrack-edge-gap` | `0.5rem` | Distance from the anchoring edge |
+| `--toastrack-shadow-gap` | `1rem` | Inset around the toast stack that keeps shadows from being clipped by the scroll container |
 | `--toastrack-transition` | `0.2s ease` | Transition timing |
 | `--toastrack-animation-duration` | `0.25s` | Entry animation duration |
 | `--toastrack-font-family` | `inherit` | Toast font family |
@@ -175,7 +179,6 @@ in your app's CSS (e.g. on `:root`):
 | `--toastrack-error-bg` / `--toastrack-error-accent` | `#fef2f2` / `#ef4444` | Error colors |
 | `--toastrack-info-bg` / `--toastrack-info-accent` / `--toastrack-info-border` | `#ffffff` / `#3b82f6` / `#e5e7eb` | Info colors |
 | `--toastrack-loading-bg` | `#eff6ff` | Loading toast background |
-| `--toastrack-collapsed-bg` / `--toastrack-collapsed-color` | `#374151` / `#ffffff` | Collapsed loading pill colors |
 | `--toastrack-progress-fill` / `--toastrack-progress-track` | `#3b82f6` / `#dbeafe` | Progress circle / spinner colors |
 | `--toastrack-action-bg` / `--toastrack-action-color` / `--toastrack-action-border` | `#1f2937` / `#ffffff` / `#9ca3af` | Action button colors |
 
@@ -186,12 +189,12 @@ in your app's CSS (e.g. on `:root`):
 | Member | Description |
 |---|---|
 | `Success` / `Warning` / `Error` / `Info` `(title, caption?, position?)` | One-line shorthands |
-| `Loading(id, title, caption?, showProgress?)` / `Progress(id, percentage)` / `Resolve(id, variant?, title?, caption?)` | Loading-toast shorthands |
+| `Loading(id, title, caption?, showProgress?, position?)` / `Progress(id, percentage)` / `Resolve(id, variant?, title?, caption?, position?)` | Loading-toast shorthands |
 | `ShowToast(ToastOptions)` | Show a toast (default variant `Success`) |
 | `ShowSuccessToast` / `ShowWarningToast` / `ShowErrorToast` / `ShowInfoToast` | Variant shorthands |
-| `ShowLoadingToast(LoadingToastOptions)` | Top-center loading toast, never auto-expires |
+| `ShowLoadingToast(LoadingToastOptions)` | Loading toast at any position, never auto-expires |
 | `UpdateLoadingToastProgress(ToastProgressUpdate)` | Update a progress loading toast (5–100 %) |
-| `ResolveLoadingToast(ResolveToastOptions)` | Replace a loading toast with a result toast |
+| `ResolveLoadingToast(ResolveToastOptions)` | Replace a loading toast with a result toast (keeps its position by default) |
 | `RemoveToast(string)` / `RemoveToast(ToastItem)` | Remove programmatically |
 | `Toasts` / `LoadingToasts` / `ToastsByPosition` | Current state (read-only snapshots) |
 | `ToastsUpdated` | Raised on every change |

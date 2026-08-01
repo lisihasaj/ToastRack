@@ -1,7 +1,6 @@
 // ToastRack JS interop module. Loaded lazily by the ToastRack component via
 // import('./_content/ToastRack/toastrack.js').
 
-const outsideClickHandlers = new Map();
 let boundaryState = null;
 
 /**
@@ -11,32 +10,6 @@ export function scrollToBottom(elementId) {
   const el = document.getElementById(elementId);
   if (el) {
     el.scrollTop = el.scrollHeight;
-  }
-}
-
-/**
- * Invokes the given .NET method whenever a click lands outside the element with the given id.
- */
-export function registerOutsideClick(elementId, dotNetRef, methodName) {
-  unregisterOutsideClick(elementId);
-  const handler = (event) => {
-    const el = document.getElementById(elementId);
-    if (el && !el.contains(event.target)) {
-      dotNetRef.invokeMethodAsync(methodName);
-    }
-  };
-  document.addEventListener('click', handler);
-  outsideClickHandlers.set(elementId, handler);
-}
-
-/**
- * Removes an outside-click handler previously registered for the element.
- */
-export function unregisterOutsideClick(elementId) {
-  const handler = outsideClickHandlers.get(elementId);
-  if (handler) {
-    document.removeEventListener('click', handler);
-    outsideClickHandlers.delete(elementId);
   }
 }
 

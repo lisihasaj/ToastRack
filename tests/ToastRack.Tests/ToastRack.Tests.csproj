@@ -7,6 +7,9 @@
     <IsPackable>false</IsPackable>
     <!-- CA1707: underscores are the standard naming convention for test methods. -->
     <NoWarn>$(NoWarn);CA1707</NoWarn>
+    <!-- Signed with the library's key so InternalsVisibleTo grants access to internals. -->
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\src\ToastRack\ToastRack.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>

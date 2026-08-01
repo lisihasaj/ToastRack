@@ -9,14 +9,17 @@ public interface IToastService
     /// <summary>Raised whenever the set of active toasts changes.</summary>
     event Action? ToastsUpdated;
 
-    /// <summary>The currently active regular (non-loading) toasts, in insertion order.</summary>
+    /// <summary>The currently active toasts (loading toasts included), in insertion order.</summary>
     IReadOnlyList<ToastItem> Toasts { get; }
 
-    /// <summary>The currently active loading toasts, in insertion order.</summary>
+    /// <summary>
+    /// The currently active loading toasts, in insertion order. A filtered view of
+    /// <see cref="Toasts"/> restricted to <see cref="ToastVariant.Loading"/>.
+    /// </summary>
     IReadOnlyList<ToastItem> LoadingToasts { get; }
 
     /// <summary>
-    /// The active regular toasts grouped by <see cref="ToastPosition"/>. Bottom-anchored groups
+    /// The active toasts grouped by <see cref="ToastPosition"/>. Bottom-anchored groups
     /// are returned newest-first so new toasts visually appear closest to the edge.
     /// </summary>
     IReadOnlyDictionary<ToastPosition, IReadOnlyList<ToastItem>> ToastsByPosition { get; }
@@ -40,8 +43,9 @@ public interface IToastService
     void ShowInfoToast(ToastOptions options);
 
     /// <summary>
-    /// Shows a loading toast (top-center, never auto-expires). Resolve it with
-    /// <see cref="ResolveLoadingToast"/> or remove it with <see cref="RemoveToast(string)"/>.
+    /// Shows a loading toast. It stacks at its <see cref="LoadingToastOptions.Position"/> like
+    /// any other toast but never auto-expires. Resolve it with <see cref="ResolveLoadingToast"/>
+    /// or remove it with <see cref="RemoveToast(string)"/>.
     /// </summary>
     void ShowLoadingToast(LoadingToastOptions options);
 

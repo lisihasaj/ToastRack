@@ -17,9 +17,10 @@ public class ResolveToastOptions
     public ToastVariant ReplaceWith { get; set; } = ToastVariant.Success;
 
     /// <summary>
-    /// The position of the resolved toast. Defaults to <see cref="ToastPosition.BottomLeft"/>.
+    /// The position of the resolved toast. Leave <c>null</c> to keep the position of the
+    /// loading toast being resolved.
     /// </summary>
-    public ToastPosition Position { get; set; } = ToastPosition.BottomLeft;
+    public ToastPosition? Position { get; set; }
 
     /// <summary>
     /// The heading text for the resolved toast.

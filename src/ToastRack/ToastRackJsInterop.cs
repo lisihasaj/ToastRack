@@ -25,35 +25,6 @@ internal sealed class ToastRackJsInterop(IJSRuntime jsRuntime) : IAsyncDisposabl
         }
     }
 
-    public async Task RegisterOutsideClickAsync<T>(
-        string elementId, DotNetObjectReference<T> dotNetRef, string methodName)
-        where T : class
-    {
-        try
-        {
-            var module = await _module.Value.ConfigureAwait(false);
-            await module.InvokeVoidAsync("registerOutsideClick", elementId, dotNetRef, methodName)
-                .ConfigureAwait(false);
-        }
-        catch (JSDisconnectedException)
-        {
-            // Circuit gone.
-        }
-    }
-
-    public async Task UnregisterOutsideClickAsync(string elementId)
-    {
-        try
-        {
-            var module = await _module.Value.ConfigureAwait(false);
-            await module.InvokeVoidAsync("unregisterOutsideClick", elementId).ConfigureAwait(false);
-        }
-        catch (JSDisconnectedException)
-        {
-            // Circuit gone.
-        }
-    }
-
     public async Task<bool> ObserveBoundaryAsync<T>(
         string selector, DotNetObjectReference<T> dotNetRef, string methodName)
         where T : class

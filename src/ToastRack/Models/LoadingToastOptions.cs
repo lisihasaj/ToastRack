@@ -2,8 +2,8 @@ namespace ToastRack;
 
 /// <summary>
 /// Options describing a loading toast shown via <see cref="IToastService.ShowLoadingToast"/>.
-/// Loading toasts are displayed top-center, never auto-expire, and are resolved with
-/// <see cref="IToastService.ResolveLoadingToast"/>.
+/// Loading toasts stack at their <see cref="Position"/> alongside every other toast variant,
+/// never auto-expire, and are resolved with <see cref="IToastService.ResolveLoadingToast"/>.
 /// </summary>
 public class LoadingToastOptions
 {
@@ -12,6 +12,11 @@ public class LoadingToastOptions
     /// target the toast when resolving or removing it. Leave <c>null</c> to auto-generate a new id.
     /// </summary>
     public string? ToastId { get; set; }
+
+    /// <summary>
+    /// The screen corner or edge where the loading toast is displayed.
+    /// </summary>
+    public ToastPosition Position { get; set; } = ToastPosition.BottomLeft;
 
     /// <summary>
     /// The heading text shown at the top of the loading toast.

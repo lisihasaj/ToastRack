@@ -11,6 +11,9 @@ public enum ToastPosition
     /// <summary>Top-right corner.</summary>
     TopRight,
 
+    /// <summary>Horizontally centered at the top.</summary>
+    TopCenter,
+
     /// <summary>Bottom-left corner.</summary>
     BottomLeft,
 

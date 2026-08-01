@@ -99,7 +99,7 @@ public class ToastServiceTests
     }
 
     [Fact]
-    public void ShowLoadingToast_AddsLoadingToastToLoadingList()
+    public void ShowLoadingToast_AddsLoadingToastToMainList()
     {
         var service = new ToastService();
 
@@ -110,11 +110,43 @@ public class ToastServiceTests
             Caption = "Description",
         });
 
-        var toast = Assert.Single(service.LoadingToasts);
-        Assert.Empty(service.Toasts);
+        // Loading toasts live in the same list as every other variant.
+        var toast = Assert.Single(service.Toasts);
+        Assert.Same(toast, Assert.Single(service.LoadingToasts));
         Assert.Equal("loading-1", toast.ToastId);
         Assert.Equal(ToastVariant.Loading, toast.Variant);
         Assert.Equal("File is loading", toast.Title);
+        Assert.Equal(ToastPosition.BottomLeft, toast.Position);
+    }
+
+    [Fact]
+    public void ShowLoadingToast_HonorsPosition()
+    {
+        var service = new ToastService();
+
+        service.ShowLoadingToast(new LoadingToastOptions
+        {
+            ToastId = "loading-1",
+            Title = "Uploading",
+            Position = ToastPosition.TopCenter,
+        });
+
+        Assert.Equal(ToastPosition.TopCenter, service.Toasts[0].Position);
+        Assert.Contains(ToastPosition.TopCenter, service.ToastsByPosition.Keys);
+    }
+
+    [Fact]
+    public void ShowLoadingToast_StacksWithOtherVariantsInInsertionOrder()
+    {
+        var service = new ToastService();
+
+        service.ShowInfoToast(new ToastOptions { ToastId = "i1", Position = ToastPosition.TopRight });
+        service.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Position = ToastPosition.TopRight });
+        service.ShowSuccessToast(new ToastOptions { ToastId = "s1", Position = ToastPosition.TopRight });
+
+        Assert.Equal(
+            ["i1", "l1", "s1"],
+            service.ToastsByPosition[ToastPosition.TopRight].Select(t => t.ToastId));
     }
 
     [Fact]
@@ -269,32 +301,15 @@ public class ToastServiceTests
     }
 
     [Fact]
-    public void ResolveLoadingToast_RemovesProgressToast()
-    {
-        var service = new ToastService();
-        service.ShowLoadingToast(new LoadingToastOptions { ToastId = "loading-1", IsProgress = true });
-        service.UpdateLoadingToastProgress(new ToastProgressUpdate
-        {
-            ToastId = "loading-1",
-            Percentage = 100,
-        });
-
-        service.ResolveLoadingToast(new ResolveToastOptions
-        {
-            ToastId = "loading-1",
-            ReplaceWith = ToastVariant.Success,
-        });
-
-        Assert.Empty(service.LoadingToasts);
-        var toast = Assert.Single(service.Toasts);
-        Assert.False(toast.IsProgress);
-    }
-
-    [Fact]
     public void ResolveLoadingToast_ReplacesLoadingToastWithResolvedVariant()
     {
         var service = new ToastService();
-        service.ShowLoadingToast(new LoadingToastOptions { ToastId = "loading-1", Title = "File is loading" });
+        service.ShowLoadingToast(new LoadingToastOptions
+        {
+            ToastId = "loading-1",
+            Title = "File is loading",
+            IsProgress = true,
+        });
 
         service.ResolveLoadingToast(new ResolveToastOptions
         {
@@ -309,6 +324,8 @@ public class ToastServiceTests
         Assert.Equal(ToastVariant.Success, toast.Variant);
         Assert.Equal("Done", toast.Title);
         Assert.Equal("Completed", toast.Caption);
+        Assert.False(toast.IsProgress);
+        Assert.Equal(0, toast.Percentage);
     }
 
     [Fact]
@@ -345,6 +362,112 @@ public class ToastServiceTests
     }
 
     [Fact]
+    public void ResolveLoadingToast_KeepsLoadingToastPositionWhenNotProvided()
+    {
+        var service = new ToastService();
+        service.ShowLoadingToast(new LoadingToastOptions
+        {
+            ToastId = "loading-1",
+            Position = ToastPosition.TopCenter,
+        });
+
+        service.ResolveLoadingToast(new ResolveToastOptions
+        {
+            ToastId = "loading-1",
+            ReplaceWith = ToastVariant.Success,
+        });
+
+        Assert.Equal(ToastPosition.TopCenter, service.Toasts[0].Position);
+    }
+
+    [Fact]
+    public void ResolveLoadingToast_KeepsToastAtItsPlaceInTheStack()
+    {
+        var service = new ToastService();
+        service.ShowInfoToast(new ToastOptions { ToastId = "first" });
+        service.ShowLoadingToast(new LoadingToastOptions { ToastId = "loading-1" });
+        service.ShowInfoToast(new ToastOptions { ToastId = "third" });
+
+        service.ResolveLoadingToast(new ResolveToastOptions
+        {
+            ToastId = "loading-1",
+            ReplaceWith = ToastVariant.Success,
+        });
+
+        Assert.Equal(["first", "loading-1", "third"], service.Toasts.Select(t => t.ToastId));
+    }
+
+    [Fact]
+    public void ResolveLoadingToast_PreservesTheSameToastInstance()
+    {
+        var service = new ToastService();
+        service.ShowLoadingToast(new LoadingToastOptions { ToastId = "loading-1" });
+        var original = service.Toasts[0];
+
+        service.ResolveLoadingToast(new ResolveToastOptions
+        {
+            ToastId = "loading-1",
+            ReplaceWith = ToastVariant.Success,
+        });
+
+        Assert.Same(original, service.Toasts[0]);
+    }
+
+    [Fact]
+    public void ResolveLoadingToast_RaisesToastsUpdatedExactlyOnce()
+    {
+        var service = new ToastService();
+        service.ShowLoadingToast(new LoadingToastOptions { ToastId = "loading-1" });
+
+        var updates = 0;
+        service.ToastsUpdated += () => updates++;
+
+        service.ResolveLoadingToast(new ResolveToastOptions
+        {
+            ToastId = "loading-1",
+            ReplaceWith = ToastVariant.Success,
+        });
+
+        Assert.Equal(1, updates);
+    }
+
+    [Fact]
+    public void ResolveLoadingToast_DoesNotNotifyWhenNoMatchingLoadingToastExists()
+    {
+        var service = new ToastService();
+
+        var updates = 0;
+        service.ToastsUpdated += () => updates++;
+
+        service.ResolveLoadingToast(new ResolveToastOptions
+        {
+            ToastId = "missing",
+            ReplaceWith = ToastVariant.Success,
+        });
+
+        Assert.Equal(0, updates);
+    }
+
+    [Fact]
+    public void ResolveLoadingToast_SetsExpirySoTheResolvedToastAutoCloses()
+    {
+        var service = new ToastService();
+        service.ShowLoadingToast(new LoadingToastOptions { ToastId = "loading-1" });
+        Assert.Equal(DateTimeOffset.MaxValue, service.Toasts[0].ExpiresAt);
+
+        service.ResolveLoadingToast(new ResolveToastOptions
+        {
+            ToastId = "loading-1",
+            ReplaceWith = ToastVariant.Success,
+            Expiry = 4,
+        });
+
+        var toast = service.Toasts[0];
+        Assert.Equal(4, toast.Expiry);
+        Assert.NotEqual(DateTimeOffset.MaxValue, toast.ExpiresAt);
+    }
+
+    [Fact]
     public void ResolveLoadingToast_IgnoresUnknownToastId()
     {
         var service = new ToastService();
@@ -352,8 +475,9 @@ public class ToastServiceTests
 
         service.ResolveLoadingToast(new ResolveToastOptions { ToastId = "unknown" });
 
-        Assert.Single(service.LoadingToasts);
-        Assert.Empty(service.Toasts);
+        // The loading toast is untouched and nothing was resolved.
+        var toast = Assert.Single(service.Toasts);
+        Assert.Equal(ToastVariant.Loading, toast.Variant);
     }
 
     [Fact]
@@ -388,6 +512,127 @@ public class ToastServiceTests
         service.RemoveToast(toast);
 
         Assert.Empty(service.Toasts);
+    }
+
+    [Fact]
+    public void ShowLoadingToast_AutoGeneratesToastIdWhenMissing()
+    {
+        var service = new ToastService();
+
+        service.ShowLoadingToast(new LoadingToastOptions { Title = "One" });
+        service.ShowLoadingToast(new LoadingToastOptions { Title = "Two" });
+
+        Assert.Equal(2, service.LoadingToasts.Count);
+        Assert.NotNull(service.LoadingToasts[0].ToastId);
+        Assert.NotEqual(service.LoadingToasts[0].ToastId, service.LoadingToasts[1].ToastId);
+    }
+
+    [Fact]
+    public void UpdateLoadingToastProgress_IgnoresNonLoadingToastWithSameId()
+    {
+        var service = new ToastService();
+        service.ShowInfoToast(new ToastOptions { ToastId = "not-loading" });
+
+        service.UpdateLoadingToastProgress(new ToastProgressUpdate
+        {
+            ToastId = "not-loading",
+            Percentage = 80,
+        });
+
+        Assert.Equal(0, service.Toasts[0].Percentage);
+    }
+
+    [Theory]
+    [InlineData(ToastVariant.Error, "Error", "An error occurred.")]
+    [InlineData(ToastVariant.Warning, "Warning", "Task completed with warning.")]
+    [InlineData(ToastVariant.Info, "Information", "Task is completed.")]
+    public void ResolveLoadingToast_UsesVariantDefaultTexts(ToastVariant variant, string title, string caption)
+    {
+        var service = new ToastService();
+        service.ShowLoadingToast(new LoadingToastOptions { ToastId = "loading-1" });
+
+        service.ResolveLoadingToast(new ResolveToastOptions
+        {
+            ToastId = "loading-1",
+            ReplaceWith = variant,
+        });
+
+        Assert.Empty(service.LoadingToasts);
+        var toast = Assert.Single(service.Toasts);
+        Assert.Equal(variant, toast.Variant);
+        Assert.Equal(title, toast.Title);
+        Assert.Equal(caption, toast.Caption);
+    }
+
+    [Theory]
+    [InlineData(ToastVariant.Error)]
+    [InlineData(ToastVariant.Warning)]
+    [InlineData(ToastVariant.Info)]
+    public void ResolveLoadingToast_HonorsCustomTextsForEachVariant(ToastVariant variant)
+    {
+        var service = new ToastService();
+        service.ShowLoadingToast(new LoadingToastOptions { ToastId = "loading-1" });
+
+        service.ResolveLoadingToast(new ResolveToastOptions
+        {
+            ToastId = "loading-1",
+            ReplaceWith = variant,
+            Title = "Custom title",
+            Caption = "Custom caption",
+        });
+
+        var toast = Assert.Single(service.Toasts);
+        Assert.Equal("Custom title", toast.Title);
+        Assert.Equal("Custom caption", toast.Caption);
+    }
+
+    [Fact]
+    public void ResolveLoadingToast_IgnoresNonLoadingToastWithSameId()
+    {
+        var service = new ToastService();
+        service.ShowInfoToast(new ToastOptions { ToastId = "not-loading", Title = "Info" });
+
+        service.ResolveLoadingToast(new ResolveToastOptions
+        {
+            ToastId = "not-loading",
+            ReplaceWith = ToastVariant.Success,
+        });
+
+        // The info toast is not a loading toast, so nothing is resolved.
+        var toast = Assert.Single(service.Toasts);
+        Assert.Equal(ToastVariant.Info, toast.Variant);
+        Assert.Equal("Info", toast.Title);
+    }
+
+    [Fact]
+    public void RemoveToast_IgnoresUnknownToastIdWithoutNotifying()
+    {
+        var service = new ToastService();
+        service.ShowInfoToast(new ToastOptions { ToastId = "info-1" });
+
+        var updateCount = 0;
+        service.ToastsUpdated += () => updateCount++;
+
+        service.RemoveToast("does-not-exist");
+
+        Assert.Single(service.Toasts);
+        Assert.Equal(0, updateCount);
+    }
+
+    [Fact]
+    public void Methods_ThrowOnNullArguments()
+    {
+        var service = new ToastService();
+
+        Assert.Throws<ArgumentNullException>(() => service.ShowToast(null!));
+        Assert.Throws<ArgumentNullException>(() => service.ShowSuccessToast(null!));
+        Assert.Throws<ArgumentNullException>(() => service.ShowWarningToast(null!));
+        Assert.Throws<ArgumentNullException>(() => service.ShowErrorToast(null!));
+        Assert.Throws<ArgumentNullException>(() => service.ShowInfoToast(null!));
+        Assert.Throws<ArgumentNullException>(() => service.ShowLoadingToast(null!));
+        Assert.Throws<ArgumentNullException>(() => service.UpdateLoadingToastProgress(null!));
+        Assert.Throws<ArgumentNullException>(() => service.ResolveLoadingToast(null!));
+        Assert.Throws<ArgumentNullException>(() => service.RemoveToast((ToastItem)null!));
     }
 
     [Fact]

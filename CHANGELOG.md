@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- New `ToastPosition.TopCenter`: every toast variant can now be shown horizontally centered
+  at the top, in viewport and boundary mode alike.
+- `LoadingToastOptions.Position` and a `position` parameter on the `Loading(...)` shorthand:
+  loading toasts can be shown at any of the six positions (default `BottomLeft`).
+- `Resolve(...)` shorthand gained an optional `position` parameter.
+- `--toastrack-shadow-gap` CSS property (default `1rem`) controlling the inset kept around the
+  toast stack so shadows are not clipped.
+
+### Changed
+
+- **Breaking:** loading toasts are no longer privileged. They stack at their position in
+  insertion order alongside every other variant instead of being pinned to a dedicated
+  top-center container, and they no longer collapse into a "Processing…" pill when several
+  are active — each loading toast stays visible individually.
+- **Breaking:** `ToastVariant.LoadingCollapsed` and the `CollapsedLoadingTitle` parameter of
+  `<ToastRack />` were removed, along with the `--toastrack-collapsed-bg` /
+  `--toastrack-collapsed-color` CSS properties.
+- **Breaking:** `IToastService.Toasts` now includes loading toasts; `LoadingToasts` remains
+  as a filtered view of it.
+- `ResolveToastOptions.Position` is now nullable and defaults to `null`, meaning the result
+  toast keeps the position of the loading toast it replaces.
+- Loading toasts now render their `Caption` (previously only the title was shown).
+
+### Fixed
+
+- Toast shadows are no longer clipped by the scrolling container. The rack keeps an inset on
+  every side that does not carry an edge gap, and adds it on top of the edge gap where one is
+  present, so the distance from the anchoring edge is unchanged.
+
 ## [0.2.0] - 2026-08-01
 
 ### Changed

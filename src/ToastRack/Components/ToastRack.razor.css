@@ -1,7 +1,14 @@
 .toastrack {
   position: fixed;
-  width: clamp(16rem, 100%, 21rem);
+  box-sizing: border-box;
+  width: clamp(
+    calc(16rem + (2 * var(--toastrack-shadow-gap, 1rem))),
+    100%,
+    calc(21rem + (2 * var(--toastrack-shadow-gap, 1rem)))
+  );
+  max-width: 100%;
   max-height: 100dvh;
+  padding: var(--toastrack-shadow-gap, 1rem);
   overflow-y: auto;
   z-index: var(--toastrack-z-index, 2000);
   display: flex;
@@ -21,44 +28,43 @@
 .toastrack--top-left {
   top: 0;
   left: 0;
-  padding-top: var(--toastrack-edge-gap, 0.5rem);
-  padding-left: var(--toastrack-edge-gap, 0.5rem);
+  padding-top: calc(var(--toastrack-edge-gap, 0.5rem) + var(--toastrack-shadow-gap, 1rem));
+  padding-left: calc(var(--toastrack-edge-gap, 0.5rem) + var(--toastrack-shadow-gap, 1rem));
 }
 
 .toastrack--top-right {
   top: 0;
   right: 0;
-  padding-top: var(--toastrack-edge-gap, 0.5rem);
-  padding-right: var(--toastrack-edge-gap, 0.5rem);
+  padding-top: calc(var(--toastrack-edge-gap, 0.5rem) + var(--toastrack-shadow-gap, 1rem));
+  padding-right: calc(var(--toastrack-edge-gap, 0.5rem) + var(--toastrack-shadow-gap, 1rem));
 }
 
 .toastrack--bottom-left {
   bottom: 0;
   left: 0;
-  padding-bottom: var(--toastrack-edge-gap, 0.5rem);
-  padding-left: var(--toastrack-edge-gap, 0.5rem);
+  padding-bottom: calc(var(--toastrack-edge-gap, 0.5rem) + var(--toastrack-shadow-gap, 1rem));
+  padding-left: calc(var(--toastrack-edge-gap, 0.5rem) + var(--toastrack-shadow-gap, 1rem));
 }
 
 .toastrack--bottom-right {
   bottom: 0;
   right: 0;
-  padding-bottom: var(--toastrack-edge-gap, 0.5rem);
-  padding-right: var(--toastrack-edge-gap, 0.5rem);
+  padding-bottom: calc(var(--toastrack-edge-gap, 0.5rem) + var(--toastrack-shadow-gap, 1rem));
+  padding-right: calc(var(--toastrack-edge-gap, 0.5rem) + var(--toastrack-shadow-gap, 1rem));
 }
 
 .toastrack--bottom-center {
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  padding-bottom: var(--toastrack-edge-gap, 0.5rem);
+  padding-bottom: calc(var(--toastrack-edge-gap, 0.5rem) + var(--toastrack-shadow-gap, 1rem));
 }
 
 .toastrack--top-center {
   top: 0;
-  left: 0;
-  right: 0;
-  margin: auto;
-  padding-top: var(--toastrack-edge-gap, 0.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+  padding-top: calc(var(--toastrack-edge-gap, 0.5rem) + var(--toastrack-shadow-gap, 1rem));
 }
 
 /* Boundary mode: inline styles provide left/top/max-height; transforms shift the
@@ -74,6 +80,12 @@
   right: auto;
   bottom: auto;
   transform: translateX(-100%);
+}
+
+.toastrack--bound.toastrack--top-center {
+  right: auto;
+  bottom: auto;
+  transform: translateX(-50%);
 }
 
 .toastrack--bound.toastrack--bottom-left {

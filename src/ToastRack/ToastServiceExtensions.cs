@@ -40,7 +40,7 @@ public static class ToastServiceExtensions
         service.ShowInfoToast(new ToastOptions { Title = title, Caption = caption, Position = position });
 
     /// <summary>
-    /// Shows a loading toast (top-center, never auto-expires). Pass <paramref name="showProgress"/>
+    /// Shows a loading toast (never auto-expires). Pass <paramref name="showProgress"/>
     /// as <c>true</c> for a determinate progress circle driven by
     /// <see cref="Progress(IToastService, string, int)"/>.
     /// </summary>
@@ -49,13 +49,15 @@ public static class ToastServiceExtensions
         string toastId,
         string title,
         string? caption = null,
-        bool showProgress = false) =>
+        bool showProgress = false,
+        ToastPosition position = ToastPosition.BottomLeft) =>
         service.ShowLoadingToast(new LoadingToastOptions
         {
             ToastId = toastId,
             Title = title,
             Caption = caption,
             IsProgress = showProgress,
+            Position = position,
         });
 
     /// <summary>Updates the progress circle of the loading toast with the given id.</summary>
@@ -66,18 +68,23 @@ public static class ToastServiceExtensions
             Percentage = percentage,
         });
 
-    /// <summary>Replaces the loading toast with the given id by a regular result toast.</summary>
+    /// <summary>
+    /// Replaces the loading toast with the given id by a regular result toast. The result toast
+    /// keeps the loading toast's position unless <paramref name="position"/> is given.
+    /// </summary>
     public static void Resolve(
         this IToastService service,
         string toastId,
         ToastVariant result = ToastVariant.Success,
         string? title = null,
-        string? caption = null) =>
+        string? caption = null,
+        ToastPosition? position = null) =>
         service.ResolveLoadingToast(new ResolveToastOptions
         {
             ToastId = toastId,
             ReplaceWith = result,
             Title = title,
             Caption = caption,
+            Position = position,
         });
 }

@@ -1,0 +1,81 @@
+name: Deploy sample to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write # deploy to GitHub Pages
+  id-token: write # OIDC token used by actions/deploy-pages
+
+# Let an in-progress deployment finish rather than cancelling it, so the live
+# site is never left half-published.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  # The site is served from https://<owner>.github.io/ToastRack/, so published
+  # assets resolve against this sub-path instead of the domain root.
+  # Serving from a custom domain instead? Set this to "/".
+  BASE_HREF: /ToastRack/
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # MinVer derives the version from git tags, so it needs full history.
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Publish sample
+        run: >
+          dotnet publish samples/ToastRack.Sample/ToastRack.Sample.csproj
+          --configuration Release
+          -p:ContinuousIntegrationBuild=true
+          --output publish
+
+      - name: Rewrite base href
+        run: >
+          sed -i 's|<base href="/" />|<base href="${{ env.BASE_HREF }}" />|g'
+          publish/wwwroot/index.html
+
+      - name: Verify base href was rewritten
+        run: grep -qF '<base href="${{ env.BASE_HREF }}" />' publish/wwwroot/index.html
+
+      # Pages runs Jekyll by default, which drops directories beginning with an
+      # underscore -- including _framework, where the WebAssembly runtime lives.
+      - name: Disable Jekyll processing
+        run: touch publish/wwwroot/.nojekyll
+
+      # Pages has no SPA rewrite rule, so a deep link or refresh would hard-404.
+      # Serving the app shell as 404.html hands routing back to the Blazor router.
+      - name: Add SPA fallback
+        run: cp publish/wwwroot/index.html publish/wwwroot/404.html
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: publish/wwwroot
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
