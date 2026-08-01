@@ -14,10 +14,11 @@
 <div class="demo-row">
     <select class="form-select demo-select" @bind="_position">
         <option value="@ToastPosition.TopLeft">Top left</option>
+        <option value="@ToastPosition.TopCenter">Top center</option>
         <option value="@ToastPosition.TopRight">Top right</option>
         <option value="@ToastPosition.BottomLeft">Bottom left</option>
-        <option value="@ToastPosition.BottomRight">Bottom right</option>
         <option value="@ToastPosition.BottomCenter">Bottom center</option>
+        <option value="@ToastPosition.BottomRight">Bottom right</option>
     </select>
     <button class="btn btn-success" @onclick="ShowSuccess">Success</button>
     <button class="btn btn-warning" @onclick="ShowWarning">Warning</button>
@@ -33,7 +34,7 @@
 </div>
 
 <h4>Loading toasts</h4>
-<p class="hint">Start several to see them collapse into a single "Processing..." pill (hover/click it to expand).</p>
+<p class="hint">Loading toasts stack at the selected position alongside every other variant; the result toast appears in the same spot.</p>
 <div class="demo-row">
     <button class="btn btn-outline-secondary" @onclick="ShowLoadingToast">Indeterminate (resolves in 4s)</button>
     <button class="btn btn-outline-secondary" @onclick="ShowProgressToast">With progress (resolves at 100%)</button>
@@ -129,10 +130,16 @@
     private async Task ShowLoadingToast()
     {
         var id = $"loading-{++_counter}";
-        Toasts.ShowLoadingToast(new LoadingToastOptions { ToastId = id, Title = $"Loading data #{_counter}..." });
+        Toasts.ShowLoadingToast(new LoadingToastOptions
+        {
+            ToastId = id,
+            Title = $"Loading data #{_counter}...",
+            Position = _position,
+        });
 
         await Task.Delay(4000);
 
+        // No Position given: the result toast keeps the loading toast's position.
         Toasts.ResolveLoadingToast(new ResolveToastOptions
         {
             ToastId = id,
@@ -150,6 +157,7 @@
             ToastId = id,
             Title = $"Uploading file #{_counter}...",
             IsProgress = true,
+            Position = _position,
         });
 
         for (var percentage = 10; percentage <= 100; percentage += 10)
@@ -170,7 +178,12 @@
     private async Task ShowFailingLoadingToast()
     {
         var id = $"failing-{++_counter}";
-        Toasts.ShowLoadingToast(new LoadingToastOptions { ToastId = id, Title = $"Syncing #{_counter}..." });
+        Toasts.ShowLoadingToast(new LoadingToastOptions
+        {
+            ToastId = id,
+            Title = $"Syncing #{_counter}...",
+            Position = _position,
+        });
 
         await Task.Delay(2500);
 

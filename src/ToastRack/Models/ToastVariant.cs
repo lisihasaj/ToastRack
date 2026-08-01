@@ -11,7 +11,7 @@ public enum ToastVariant
     /// <summary>A cautionary toast.</summary>
     Warning,
 
-    /// <summary>An error toast. Error toasts never auto-expire.</summary>
+    /// <summary>An error toast.</summary>
     Error,
 
     /// <summary>A neutral informational toast.</summary>
@@ -19,9 +19,6 @@ public enum ToastVariant
 
     /// <summary>A loading toast with an indeterminate spinner or a determinate progress circle.</summary>
     Loading,
-
-    /// <summary>The collapsed representation shown when multiple loading toasts are active.</summary>
-    LoadingCollapsed,
 
     /// <summary>A toast whose content is fully rendered from <see cref="ToastOptions.Fragment"/>.</summary>
     Custom,

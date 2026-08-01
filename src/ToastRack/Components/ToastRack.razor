@@ -14,37 +14,9 @@
          @key="@group.Key">
         @foreach (var toast in group.Value)
         {
-            <ToastView @key="@toast.ToastId"
-                       Item="@toast"
-                       AnimationClass="@SlideInClass(group.Key)"/>
-        }
-    </div>
-}
-
-@{
-    var loadingToasts = ToastService.LoadingToasts;
-}
-@if (loadingToasts.Count > 0)
-{
-    <div id="@LoadingContainerId" class="toastrack toastrack--top-center"
-         @onmouseenter="@OnLoadingHoverIn"
-         @onmouseleave="@OnLoadingHoverOut"
-         @onclick="@OnLoadingClick">
-        @if (loadingToasts.Count > 1 && !_isLoadingHovered && !_isLoadingClicked)
-        {
-            <ToastView @key="LoadingContainerId"
-                       Item="_collapsedLoadingItem"
-                       AnimationClass="toastrack-animate-slide-down"
-                       LoadingToastsCount="@loadingToasts.Count"/>
-        }
-        else
-        {
-            foreach (var loadingToast in loadingToasts)
-            {
-                <ToastView @key="loadingToast.ToastId"
-                           Item="loadingToast"
-                           AnimationClass="toastrack-animate-slide-down"/>
-            }
+            <Toast @key="@toast.ToastId"
+                   Item="@toast"
+                   AnimationClass="@SlideInClass(group.Key)"/>
         }
     </div>
 }
@@ -58,33 +30,17 @@
     /// </summary>
     [Parameter] public string? BoundarySelector { get; set; }
 
-    /// <summary>
-    /// Title of the collapsed toast shown when more than one loading toast is active.
-    /// </summary>
-    [Parameter] public string CollapsedLoadingTitle { get; set; } = "Processing...";
-
-    private const string LoadingContainerId = "toastrack-loading";
-
     private ToastRackJsInterop? _js;
     private BoundaryRect? _boundary;
     private bool _shouldScrollTopGroups;
-    private bool _isLoadingHovered;
-    private bool _isLoadingClicked;
     private DotNetObjectReference<ToastRack>? _dotNetRef;
-    private bool _outsideClickRegistered;
     private bool _boundaryObserved;
-    private readonly ToastItem _collapsedLoadingItem = new()
-    {
-        ToastId = LoadingContainerId,
-        Variant = ToastVariant.LoadingCollapsed,
-        CloseByClick = false,
-        ExpiresAt = DateTimeOffset.MaxValue,
-    };
 
     private static string PositionClass(ToastPosition position) => position switch
     {
         ToastPosition.TopLeft => "toastrack--top-left",
         ToastPosition.TopRight => "toastrack--top-right",
+        ToastPosition.TopCenter => "toastrack--top-center",
         ToastPosition.BottomLeft => "toastrack--bottom-left",
         ToastPosition.BottomRight => "toastrack--bottom-right",
         ToastPosition.BottomCenter => "toastrack--bottom-center",
@@ -113,6 +69,7 @@
         {
             ToastPosition.TopLeft => (rect.Left, rect.Top),
             ToastPosition.TopRight => (rect.Left + rect.Width, rect.Top),
+            ToastPosition.TopCenter => (rect.Left + (rect.Width / 2), rect.Top),
             ToastPosition.BottomLeft => (rect.Left, rect.Top + rect.Height),
             ToastPosition.BottomRight => (rect.Left + rect.Width, rect.Top + rect.Height),
             _ => (rect.Left + (rect.Width / 2), rect.Top + rect.Height),
@@ -125,15 +82,9 @@
 
     protected override void OnInitialized()
     {
-        _collapsedLoadingItem.Title = CollapsedLoadingTitle;
         _js = new ToastRackJsInterop(JSRuntime);
         _dotNetRef = DotNetObjectReference.Create(this);
         ToastService.ToastsUpdated += OnToastsUpdated;
-    }
-
-    protected override void OnParametersSet()
-    {
-        _collapsedLoadingItem.Title = CollapsedLoadingTitle;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -144,8 +95,6 @@
                 BoundarySelector, _dotNetRef, nameof(OnBoundaryChanged));
         }
 
-        await SyncOutsideClickHandlerAsync();
-
         if (!_shouldScrollTopGroups || _js is null) return;
 
         _shouldScrollTopGroups = false;
@@ -155,15 +104,10 @@
             await _js.ScrollToBottomAsync(ContainerId(group.Key));
         }
 
-        if (ToastService.LoadingToasts.Count > 0)
-        {
-            await _js.ScrollToBottomAsync(LoadingContainerId);
-        }
-
         return;
 
         static bool IsTopPosition(ToastPosition position) =>
-            position is ToastPosition.TopLeft or ToastPosition.TopRight;
+            position is ToastPosition.TopLeft or ToastPosition.TopRight or ToastPosition.TopCenter;
     }
 
     /// <inheritdoc />
@@ -173,12 +117,6 @@
 
         if (_js is not null)
         {
-            if (_outsideClickRegistered)
-            {
-                _outsideClickRegistered = false;
-                await _js.UnregisterOutsideClickAsync(LoadingContainerId);
-            }
-
             if (_boundaryObserved)
             {
                 _boundaryObserved = false;
@@ -189,26 +127,6 @@
         }
 
         _dotNetRef?.Dispose();
-    }
-
-    private async Task SyncOutsideClickHandlerAsync()
-    {
-        if (_js is null || _dotNetRef is null) return;
-
-        if (_isLoadingClicked && !_outsideClickRegistered)
-        {
-            _outsideClickRegistered = true;
-
-            await _js.RegisterOutsideClickAsync(
-                LoadingContainerId,
-                _dotNetRef,
-                nameof(HandleOutsideClick));
-        }
-        else if (!_isLoadingClicked && _outsideClickRegistered)
-        {
-            _outsideClickRegistered = false;
-            await _js.UnregisterOutsideClickAsync(LoadingContainerId);
-        }
     }
 
     /// <summary>Invoked from JS whenever the boundary element's rectangle changes.</summary>
@@ -222,55 +140,7 @@
     private void OnToastsUpdated()
     {
         _shouldScrollTopGroups = true;
-
-        if (ToastService.LoadingToasts.Count < 2)
-        {
-            _isLoadingHovered = false;
-            _isLoadingClicked = false;
-        }
-
         _ = InvokeAsync(StateHasChanged);
-    }
-
-    /// <summary>Invoked from JS when a click lands outside the expanded loading stack.</summary>
-    [JSInvokable]
-    public void HandleOutsideClick()
-    {
-        if (!_isLoadingClicked) return;
-
-        _isLoadingClicked = false;
-        _isLoadingHovered = false;
-        _ = InvokeAsync(StateHasChanged);
-    }
-
-    private void OnLoadingClick()
-    {
-        if (ToastService.LoadingToasts.Count <= 1) return;
-
-        _isLoadingClicked = !_isLoadingClicked;
-
-        if (!_isLoadingClicked)
-        {
-            _isLoadingHovered = false;
-        }
-
-        StateHasChanged();
-    }
-
-    private void OnLoadingHoverIn()
-    {
-        if (ToastService.LoadingToasts.Count <= 1 || _isLoadingHovered) return;
-
-        _isLoadingHovered = true;
-        StateHasChanged();
-    }
-
-    private void OnLoadingHoverOut()
-    {
-        if (!_isLoadingHovered || _isLoadingClicked) return;
-
-        _isLoadingHovered = false;
-        StateHasChanged();
     }
 
 }

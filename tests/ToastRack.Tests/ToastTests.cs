@@ -3,29 +3,23 @@ using ToastRack.Components;
 
 namespace ToastRack.Tests;
 
-public class ToastViewTests : BunitContext
+public class ToastTests : BunitContext
 {
     private readonly ToastService _toastService = new();
 
-    public ToastViewTests()
+    public ToastTests()
     {
         Services.AddSingleton<IToastService>(_toastService);
     }
 
-    private IRenderedComponent<ToastView> RenderToast(
-        ToastItem item, string? animationClass = null, int? loadingCount = null)
+    private IRenderedComponent<Toast> RenderToast(ToastItem item, string? animationClass = null)
     {
-        return Render<ToastView>(parameters =>
+        return Render<Toast>(parameters =>
         {
             parameters.Add(p => p.Item, item);
             if (animationClass is not null)
             {
                 parameters.Add(p => p.AnimationClass, animationClass);
-            }
-
-            if (loadingCount is not null)
-            {
-                parameters.Add(p => p.LoadingToastsCount, loadingCount);
             }
         });
     }
@@ -203,24 +197,15 @@ public class ToastViewTests : BunitContext
     }
 
     [Fact]
-    public void Toast_LoadingCollapsed_RendersCountWhenMoreThanOne()
+    public void Toast_LoadingVariant_RendersCaptionWhenProvided()
     {
-        var item = NonExpiringItem(ToastVariant.LoadingCollapsed, "Processing...");
+        var item = NonExpiringItem(ToastVariant.Loading, "Uploading...", "3 of 7 files done.");
 
-        var component = RenderToast(item, loadingCount: 3);
+        var component = RenderToast(item);
 
-        Assert.Contains("toastrack-toast__count", component.Markup);
-        Assert.Contains("3", component.Markup);
-    }
-
-    [Fact]
-    public void Toast_LoadingCollapsed_HidesCountWhenOneOrLess()
-    {
-        var item = NonExpiringItem(ToastVariant.LoadingCollapsed, "Processing...");
-
-        var component = RenderToast(item, loadingCount: 1);
-
-        Assert.DoesNotContain("toastrack-toast__count", component.Markup);
+        Assert.Contains("toastrack-toast__content", component.Markup);
+        Assert.Contains("Uploading...", component.Markup);
+        Assert.Contains("3 of 7 files done.", component.Markup);
     }
 
     [Fact]
@@ -394,6 +379,36 @@ public class ToastViewTests : BunitContext
     }
 
     [Fact]
+    public async Task Toast_ResolvedLoadingToast_AutoExpires()
+    {
+        _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "resolve-expire", Title = "Working..." });
+        var loadingItem = _toastService.LoadingToasts.Single();
+
+        var component = RenderToast(loadingItem);
+
+        // Resolving replaces the loading item with a new one that keeps the same ToastId, so the
+        // keyed Toast instance is reused and only receives the resolved item as a parameter.
+        _toastService.ResolveLoadingToast(new ResolveToastOptions
+        {
+            ToastId = "resolve-expire",
+            ReplaceWith = ToastVariant.Success,
+        });
+        var resolvedItem = _toastService.Toasts.Single();
+        resolvedItem.ExpiresAt = DateTimeOffset.UtcNow.AddMilliseconds(50);
+
+        component.Render(parameters => parameters.Add(p => p.Item, resolvedItem));
+
+        // The reused instance must re-arm its expiry timer for the new item without any hover.
+        var deadline = DateTime.UtcNow.AddSeconds(2);
+        while (_toastService.Toasts.Count > 0 && DateTime.UtcNow < deadline)
+        {
+            await Task.Delay(25);
+        }
+
+        Assert.Empty(_toastService.Toasts);
+    }
+
+    [Fact]
     public async Task Toast_MouseEnter_PausesExpiry()
     {
         _toastService.ShowSuccessToast(new ToastOptions { ToastId = "pause", Title = "Hover me", Expiry = 5 });
@@ -406,5 +421,139 @@ public class ToastViewTests : BunitContext
         // While hovered, the expiry timer is paused, so the toast survives past its original expiry.
         await Task.Delay(200);
         Assert.Single(_toastService.Toasts);
+    }
+
+    [Fact]
+    public async Task Toast_MouseLeave_ResumesExpiryWithRemainingTime()
+    {
+        _toastService.ShowSuccessToast(new ToastOptions { ToastId = "resume", Title = "Hover me", Expiry = 5 });
+        var item = _toastService.Toasts.Single();
+        item.ExpiresAt = DateTimeOffset.UtcNow.AddMilliseconds(150);
+
+        var component = RenderToast(item);
+        var toast = component.Find(".toastrack-toast");
+        toast.MouseEnter();
+
+        // Hover past the original expiry: the toast must survive while paused.
+        await Task.Delay(300);
+        Assert.Single(_toastService.Toasts);
+
+        // Leaving restarts the timer with the remaining time captured on hover (~150 ms).
+        toast.MouseLeave();
+
+        var deadline = DateTime.UtcNow.AddSeconds(2);
+        while (_toastService.Toasts.Count > 0 && DateTime.UtcNow < deadline)
+        {
+            await Task.Delay(25);
+        }
+
+        Assert.Empty(_toastService.Toasts);
+    }
+
+    [Fact]
+    public void Toast_NonExpiring_HoverEventsAreNoOps()
+    {
+        var item = NonExpiringItem(ToastVariant.Info, "Sticky");
+
+        var component = RenderToast(item);
+        var toast = component.Find(".toastrack-toast");
+        toast.MouseEnter();
+        toast.MouseLeave();
+
+        Assert.Equal(DateTimeOffset.MaxValue, item.ExpiresAt);
+    }
+
+    [Fact]
+    public void Toast_MouseLeaveWithoutEnter_DoesNotChangeExpiry()
+    {
+        _toastService.ShowSuccessToast(new ToastOptions { ToastId = "leave-only", Title = "Bye", Expiry = 60 });
+        var item = _toastService.Toasts.Single();
+        var originalExpiresAt = item.ExpiresAt;
+
+        var component = RenderToast(item);
+        component.Find(".toastrack-toast").MouseLeave();
+
+        Assert.Equal(originalExpiresAt, item.ExpiresAt);
+        Assert.Single(_toastService.Toasts);
+    }
+
+    [Fact]
+    public void Toast_WarningVariant_RendersWarningClassAndBuiltInIcon()
+    {
+        var component = RenderToast(NonExpiringItem(ToastVariant.Warning, "Careful"));
+
+        Assert.Contains("toastrack-toast--warning", component.Markup);
+        Assert.Contains("toastrack-toast--defined", component.Markup);
+        Assert.NotNull(component.Find(".toastrack-toast__icon svg"));
+    }
+
+    [Fact]
+    public void Toast_UnknownVariant_FallsBackToInfoStyling()
+    {
+        var component = RenderToast(NonExpiringItem((ToastVariant)999, "Odd"));
+
+        Assert.Contains("toastrack-toast--info", component.Markup);
+        Assert.Contains("toastrack-toast--defined", component.Markup);
+        Assert.NotNull(component.Find(".toastrack-toast__icon svg"));
+    }
+
+    [Theory]
+    [InlineData(ToastActionStyle.Primary, "toastrack-action--primary")]
+    [InlineData(ToastActionStyle.Outline, "toastrack-action--outline")]
+    [InlineData(ToastActionStyle.Text, "toastrack-action--text")]
+    public void Toast_ActionStyle_MapsToCssClass(ToastActionStyle style, string expectedClass)
+    {
+        var item = NonExpiringItem(ToastVariant.Info, "Undo?");
+        item.Actions =
+        [
+            new ToastAction { Id = "styled-action", Label = "Undo", Style = style },
+        ];
+
+        var component = RenderToast(item);
+
+        Assert.Contains(expectedClass, component.Find("#styled-action").ClassList);
+    }
+
+    [Fact]
+    public void Toast_ActionCustomCssClass_IsAppended()
+    {
+        var item = NonExpiringItem(ToastVariant.Info, "Undo?");
+        item.Actions =
+        [
+            new ToastAction { Id = "custom-action", Label = "Undo", CssClass = "my-action" },
+        ];
+
+        var component = RenderToast(item);
+        var button = component.Find("#custom-action");
+
+        Assert.Contains("toastrack-action--primary", button.ClassList);
+        Assert.Contains("my-action", button.ClassList);
+    }
+
+    [Fact]
+    public void Toast_CaptionOnly_RendersContentWithoutTitle()
+    {
+        var component = RenderToast(NonExpiringItem(ToastVariant.Success, caption: "Just a caption"));
+
+        Assert.Contains("toastrack-toast__caption", component.Markup);
+        Assert.DoesNotContain("toastrack-toast__title", component.Markup);
+    }
+
+    [Fact]
+    public void Toast_LoadingVariant_CaptionOnly_RendersContentWithoutTitle()
+    {
+        var component = RenderToast(NonExpiringItem(ToastVariant.Loading, caption: "3 of 7 files done."));
+
+        Assert.Contains("toastrack-toast__caption", component.Markup);
+        Assert.DoesNotContain("toastrack-toast__title", component.Markup);
+    }
+
+    [Fact]
+    public void Toast_LoadingVariant_WithoutTexts_OmitsContentBlock()
+    {
+        var component = RenderToast(NonExpiringItem(ToastVariant.Loading));
+
+        Assert.Contains("toastrack-spinner", component.Markup);
+        Assert.DoesNotContain("toastrack-toast__content", component.Markup);
     }
 }

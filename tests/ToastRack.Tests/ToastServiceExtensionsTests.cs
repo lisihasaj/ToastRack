@@ -56,6 +56,16 @@ public class ToastServiceExtensionsTests
         Assert.Equal("job", toast.ToastId);
         Assert.Equal(ToastVariant.Loading, toast.Variant);
         Assert.False(toast.IsProgress);
+        Assert.Equal(ToastPosition.BottomLeft, toast.Position);
+    }
+
+    [Fact]
+    public void Loading_ShowsLoadingToastAtGivenPosition()
+    {
+        _service.Loading("job", "Uploading...", position: ToastPosition.TopCenter);
+
+        var toast = Assert.Single(_service.LoadingToasts);
+        Assert.Equal(ToastPosition.TopCenter, toast.Position);
     }
 
     [Fact]
@@ -80,5 +90,16 @@ public class ToastServiceExtensionsTests
         var toast = Assert.Single(_service.Toasts);
         Assert.Equal(ToastVariant.Success, toast.Variant);
         Assert.Equal("Uploaded", toast.Title);
+    }
+
+    [Fact]
+    public void Resolve_KeepsLoadingToastPositionByDefault()
+    {
+        _service.Loading("job", "Uploading...", position: ToastPosition.TopRight);
+
+        _service.Resolve("job", ToastVariant.Success, "Uploaded");
+
+        var toast = Assert.Single(_service.Toasts);
+        Assert.Equal(ToastPosition.TopRight, toast.Position);
     }
 }

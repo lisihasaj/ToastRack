@@ -12,7 +12,6 @@ public class ToastService : IToastService
 
     private readonly object _gate = new();
     private readonly List<ToastItem> _toasts = [];
-    private readonly List<ToastItem> _loadingToasts = [];
 
     /// <inheritdoc />
     public event Action? ToastsUpdated;
@@ -36,7 +35,7 @@ public class ToastService : IToastService
         {
             lock (_gate)
             {
-                return _loadingToasts.ToArray();
+                return _toasts.Where(t => t.Variant is ToastVariant.Loading).ToArray();
             }
         }
     }
@@ -133,13 +132,13 @@ public class ToastService : IToastService
 
         lock (_gate)
         {
-            if (options.ToastId != null && _loadingToasts.Any(t => t.ToastId == options.ToastId)) return;
+            if (options.ToastId != null && _toasts.Any(t => t.ToastId == options.ToastId)) return;
 
             var toastItem = new ToastItem
             {
                 ToastId = options.ToastId ?? Guid.NewGuid().ToString(),
                 Variant = ToastVariant.Loading,
-                Position = ToastPosition.TopRight,
+                Position = options.Position,
                 Title = options.Title,
                 Caption = options.Caption,
                 CloseByClick = false,
@@ -149,7 +148,7 @@ public class ToastService : IToastService
                 Percentage = options.IsProgress ? InitialProgressPercentage : 0,
             };
 
-            _loadingToasts.Add(toastItem);
+            _toasts.Add(toastItem);
         }
 
         NotifyToastsUpdated();
@@ -162,7 +161,7 @@ public class ToastService : IToastService
 
         lock (_gate)
         {
-            var toast = _loadingToasts.Find(t => t.ToastId == update.ToastId);
+            var toast = _toasts.Find(t => t.Variant is ToastVariant.Loading && t.ToastId == update.ToastId);
             if (toast is null) return;
 
             toast.Percentage = Math.Max(InitialProgressPercentage, Math.Clamp(update.Percentage, 0, 100));
@@ -176,48 +175,32 @@ public class ToastService : IToastService
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        ToastItem? toast;
         lock (_gate)
         {
-            toast = _loadingToasts.Find(t => t.ToastId == options.ToastId);
-            if (toast is not null)
-            {
-                _loadingToasts.Remove(toast);
-            }
-        }
+            var toast = _toasts.Find(t => t.Variant is ToastVariant.Loading && t.ToastId == options.ToastId);
+            if (toast is null) return;
 
-        if (toast is not null)
-        {
-            var resolvedOptions = new ToastOptions
+            var (defaultTitle, defaultCaption) = options.ReplaceWith switch
             {
-                ToastId = options.ToastId,
-                Position = options.Position,
-                Expiry = options.Expiry,
+                ToastVariant.Success => ("Success", "Task is completed successfully."),
+                ToastVariant.Error => ("Error", "An error occurred."),
+                ToastVariant.Warning => ("Warning", "Task completed with warning."),
+                _ => ("Information", "Task is completed."),
             };
 
-            switch (options.ReplaceWith)
-            {
-                case ToastVariant.Success:
-                    resolvedOptions.Title = options.Title ?? "Success";
-                    resolvedOptions.Caption = options.Caption ?? "Task is completed successfully.";
-                    ShowSuccessToast(resolvedOptions);
-                    break;
-                case ToastVariant.Error:
-                    resolvedOptions.Title = options.Title ?? "Error";
-                    resolvedOptions.Caption = options.Caption ?? "An error occurred.";
-                    ShowErrorToast(resolvedOptions);
-                    break;
-                case ToastVariant.Warning:
-                    resolvedOptions.Title = options.Title ?? "Warning";
-                    resolvedOptions.Caption = options.Caption ?? "Task completed with warning.";
-                    ShowWarningToast(resolvedOptions);
-                    break;
-                default:
-                    resolvedOptions.Title = options.Title ?? "Information";
-                    resolvedOptions.Caption = options.Caption ?? "Task is completed.";
-                    ShowInfoToast(resolvedOptions);
-                    break;
-            }
+            toast.Variant = options.ReplaceWith is ToastVariant.Success
+                or ToastVariant.Error
+                or ToastVariant.Warning
+                ? options.ReplaceWith
+                : ToastVariant.Info;
+            toast.Position = options.Position ?? toast.Position;
+            toast.Title = options.Title ?? defaultTitle;
+            toast.Caption = options.Caption ?? defaultCaption;
+            toast.CloseByClick = true;
+            toast.ExpiresAt = DateTimeOffset.UtcNow.AddSeconds(options.Expiry);
+            toast.Expiry = options.Expiry;
+            toast.IsProgress = false;
+            toast.Percentage = 0;
         }
 
         NotifyToastsUpdated();
@@ -230,10 +213,7 @@ public class ToastService : IToastService
 
         lock (_gate)
         {
-            if (!_toasts.Remove(toast))
-            {
-                _loadingToasts.Remove(toast);
-            }
+            _toasts.Remove(toast);
         }
 
         NotifyToastsUpdated();
@@ -245,17 +225,9 @@ public class ToastService : IToastService
         lock (_gate)
         {
             var toast = _toasts.Find(t => t.ToastId == toastId);
-            if (toast is not null)
-            {
-                _toasts.Remove(toast);
-            }
-            else
-            {
-                toast = _loadingToasts.Find(t => t.ToastId == toastId);
-                if (toast is null) return;
+            if (toast is null) return;
 
-                _loadingToasts.Remove(toast);
-            }
+            _toasts.Remove(toast);
         }
 
         NotifyToastsUpdated();

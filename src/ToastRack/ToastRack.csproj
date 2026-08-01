@@ -67,4 +67,9 @@
     <SupportedPlatform Include="browser" />
   </ItemGroup>
 
+  <!-- The test project is signed with the same checked-in key, so the full public key is required. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="ToastRack.Tests, PublicKey=0024000004800000140100000602000000240000525341310008000001000100d7613ec4e2f4dffc34a3fb4b7b4dcff9b254f675e3fbc1c48340ed0747048ebfe384f2faea728dea051b5eaf619b7e87ba998322cef3c91e391eacc8dee994767343a45c4c320ba677732eaf14236b4fe9c078e3281c2f0aae78d2e1c3686c47f3d5ed9982263e1dfed2d0eb76da7ed232de80494a6c25b95e7fe0c4ee14f7cd687e9c2169cf2351724e4694be015aa2fbc86e8523c72c57599563bcafe1132720d9199eb2f5d9f06ce546e750fd716291826924cd035387044736f98c0a224f39f57e1f47d316b9b34599066ce98ba00c55d2eb957b880e5b3c3315b06a0f880083ddd2ca9afc304b4cd8a38f41e45c93092c1c284d9ab28b641d8fb65e12b9" />
+  </ItemGroup>
+
 </Project>

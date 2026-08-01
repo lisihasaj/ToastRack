@@ -1,3 +1,4 @@
+using System.Reflection;
 using Bunit.JSInterop;
 using Microsoft.Extensions.DependencyInjection;
 using ToastRackComponent = ToastRack.Components.ToastRack;
@@ -22,7 +23,6 @@ public class ToastRackComponentTests : BunitContext
         var component = Render<ToastRackComponent>();
 
         Assert.DoesNotContain("toastrack--", component.Markup);
-        Assert.DoesNotContain("toastrack-loading", component.Markup);
     }
 
     [Fact]
@@ -61,6 +61,23 @@ public class ToastRackComponentTests : BunitContext
     }
 
     [Fact]
+    public void TopCenterPosition_RendersOwnGroupWithSlideDown()
+    {
+        _toastService.ShowInfoToast(new ToastOptions
+        {
+            ToastId = "t-center",
+            Title = "Centered",
+            Position = ToastPosition.TopCenter,
+        });
+
+        var component = Render<ToastRackComponent>();
+
+        Assert.Contains("toastrack--top-center", component.Markup);
+        Assert.Contains("id=\"toastrackTopCenter\"", component.Markup);
+        Assert.Contains("toastrack-animate-slide-down", component.Markup);
+    }
+
+    [Fact]
     public void GroupsToastsByPosition()
     {
         _toastService.ShowInfoToast(new ToastOptions { ToastId = "a", Title = "TopLeftToast", Position = ToastPosition.TopLeft });
@@ -86,16 +103,51 @@ public class ToastRackComponentTests : BunitContext
     }
 
     [Fact]
-    public void SingleLoadingToast_RendersLoadingContainer()
+    public void LoadingToast_RendersInItsPositionGroup()
     {
-        _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Title = "Loading one" });
+        _toastService.ShowLoadingToast(new LoadingToastOptions
+        {
+            ToastId = "l1",
+            Title = "Loading one",
+            Position = ToastPosition.TopCenter,
+        });
 
         var component = Render<ToastRackComponent>();
 
-        Assert.Contains("id=\"toastrack-loading\"", component.Markup);
+        Assert.Contains("id=\"toastrackTopCenter\"", component.Markup);
+        Assert.Contains("toastrack--top-center", component.Markup);
         Assert.Contains("Loading one", component.Markup);
-        // A single loading toast is never collapsed.
-        Assert.DoesNotContain("toastrack-toast__count", component.Markup);
+        Assert.Contains("toastrack-toast--loading", component.Markup);
+    }
+
+    [Fact]
+    public void LoadingToast_SharesGroupWithOtherVariants()
+    {
+        _toastService.ShowInfoToast(new ToastOptions { ToastId = "i1", Title = "InfoFirst", Position = ToastPosition.TopRight });
+        _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Title = "LoadingSecond", Position = ToastPosition.TopRight });
+
+        var component = Render<ToastRackComponent>();
+
+        // One shared container holds both toasts in insertion order.
+        var container = component.Find("#toastrackTopRight");
+        var toasts = container.QuerySelectorAll(".toastrack-toast");
+        Assert.Equal(2, toasts.Length);
+        Assert.Contains("InfoFirst", toasts[0].TextContent);
+        Assert.Contains("LoadingSecond", toasts[1].TextContent);
+    }
+
+    [Fact]
+    public void MultipleLoadingToasts_RenderIndividually()
+    {
+        _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Title = "First" });
+        _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l2", Title = "Second" });
+
+        var component = Render<ToastRackComponent>();
+
+        // No collapsing: every loading toast is visible on its own.
+        Assert.Contains("First", component.Markup);
+        Assert.Contains("Second", component.Markup);
+        Assert.Equal(2, component.FindAll(".toastrack-toast--loading").Count);
     }
 
     [Fact]
@@ -105,7 +157,6 @@ public class ToastRackComponentTests : BunitContext
 
         var component = Render<ToastRackComponent>();
 
-        Assert.Contains("id=\"toastrack-loading\"", component.Markup);
         Assert.Contains("toastrack-toast__progress-circle", component.Markup);
         Assert.Contains("--toastrack-progress: 5%", component.Markup);
     }
@@ -127,134 +178,17 @@ public class ToastRackComponentTests : BunitContext
     }
 
     [Fact]
-    public void MultipleProgressToasts_CollapsedPlaceholderShowsSpinner()
-    {
-        _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Title = "First", IsProgress = true });
-        _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l2", Title = "Second", IsProgress = true });
-
-        var component = Render<ToastRackComponent>();
-
-        // The collapsed placeholder aggregates several toasts, so it has no single
-        // percentage to show and falls back to the indeterminate spinner.
-        Assert.Contains("toastrack-spinner", component.Markup);
-        Assert.DoesNotContain("toastrack-toast__progress-circle", component.Markup);
-    }
-
-    [Fact]
-    public void MultipleProgressToasts_ExpandOnHoverShowsEachCircle()
+    public void MultipleProgressToasts_EachRenderTheirOwnCircle()
     {
         _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Title = "First", IsProgress = true });
         _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l2", Title = "Second", IsProgress = true });
         _toastService.UpdateLoadingToastProgress(new ToastProgressUpdate { ToastId = "l2", Percentage = 80 });
 
         var component = Render<ToastRackComponent>();
-        component.Find("#toastrack-loading").MouseEnter();
 
         Assert.Equal(2, component.FindAll(".toastrack-toast__progress-circle").Count);
         Assert.Contains("--toastrack-progress: 5%", component.Markup);
         Assert.Contains("--toastrack-progress: 80%", component.Markup);
-    }
-
-    [Fact]
-    public void MultipleLoadingToasts_RenderCollapsedByDefault()
-    {
-        _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Title = "First" });
-        _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l2", Title = "Second" });
-
-        var component = Render<ToastRackComponent>();
-
-        // Collapsed placeholder shows the aggregate title + count, individual titles are hidden.
-        Assert.Contains("Processing...", component.Markup);
-        Assert.Contains("toastrack-toast__count", component.Markup);
-        Assert.Contains("2", component.Markup);
-        Assert.DoesNotContain("First", component.Markup);
-        Assert.DoesNotContain("Second", component.Markup);
-    }
-
-    [Fact]
-    public void CollapsedLoadingTitle_IsCustomizable()
-    {
-        _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Title = "First" });
-        _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l2", Title = "Second" });
-
-        var component = Render<ToastRackComponent>(parameters =>
-            parameters.Add(p => p.CollapsedLoadingTitle, "Wird verarbeitet..."));
-
-        Assert.Contains("Wird verarbeitet...", component.Markup);
-        Assert.DoesNotContain("Processing...", component.Markup);
-    }
-
-    [Fact]
-    public void MultipleLoadingToasts_ExpandOnHover()
-    {
-        _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Title = "First" });
-        _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l2", Title = "Second" });
-
-        var component = Render<ToastRackComponent>();
-        component.Find("#toastrack-loading").MouseEnter();
-
-        // Hovering expands the stack to show each loading toast.
-        Assert.Contains("First", component.Markup);
-        Assert.Contains("Second", component.Markup);
-        Assert.DoesNotContain("toastrack-toast__count", component.Markup);
-    }
-
-    [Fact]
-    public void LoadingHoverOut_CollapsesAgain()
-    {
-        _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Title = "First" });
-        _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l2", Title = "Second" });
-
-        var component = Render<ToastRackComponent>();
-        var container = component.Find("#toastrack-loading");
-        container.MouseEnter();
-        Assert.Contains("First", component.Markup);
-
-        container.MouseLeave();
-
-        Assert.Contains("Processing...", component.Markup);
-        Assert.DoesNotContain("First", component.Markup);
-    }
-
-    [Fact]
-    public void LoadingClick_ExpandsAndRegistersOutsideClickHandler()
-    {
-        _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Title = "First" });
-        _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l2", Title = "Second" });
-
-        var component = Render<ToastRackComponent>();
-        component.Find("#toastrack-loading").Click();
-
-        component.WaitForAssertion(() => _module.VerifyInvoke("registerOutsideClick"));
-        Assert.Contains("First", component.Markup);
-    }
-
-    [Fact]
-    public void LoadingClickTwice_UnregistersOutsideClickHandler()
-    {
-        _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Title = "First" });
-        _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l2", Title = "Second" });
-
-        var component = Render<ToastRackComponent>();
-        var container = component.Find("#toastrack-loading");
-
-        container.Click();
-        component.WaitForAssertion(() => _module.VerifyInvoke("registerOutsideClick"));
-
-        container.Click();
-        component.WaitForAssertion(() => _module.VerifyInvoke("unregisterOutsideClick"));
-    }
-
-    [Fact]
-    public void SingleLoadingToast_ClickDoesNotToggle()
-    {
-        _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Title = "Only" });
-
-        var component = Render<ToastRackComponent>();
-        component.Find("#toastrack-loading").Click();
-
-        // With a single loading toast, clicking is a no-op — no outside-click handler is registered.
-        Assert.DoesNotContain(_module.Invocations, i => i.Identifier == "registerOutsideClick");
     }
 
     [Fact]
@@ -269,6 +203,24 @@ public class ToastRackComponentTests : BunitContext
             Assert.Contains(
                 _module.Invocations,
                 i => i.Identifier == "scrollToBottom" && Equals(i.Arguments[0], "toastrackTopRight")));
+    }
+
+    [Fact]
+    public void ScrollsTopCenterGroupToBottomAfterRender()
+    {
+        var component = Render<ToastRackComponent>();
+
+        _toastService.ShowLoadingToast(new LoadingToastOptions
+        {
+            ToastId = "l1",
+            Title = "Loading",
+            Position = ToastPosition.TopCenter,
+        });
+
+        component.WaitForAssertion(() =>
+            Assert.Contains(
+                _module.Invocations,
+                i => i.Identifier == "scrollToBottom" && Equals(i.Arguments[0], "toastrackTopCenter")));
     }
 
     [Fact]
@@ -319,20 +271,114 @@ public class ToastRackComponentTests : BunitContext
     }
 
     [Fact]
+    public void BoundaryChange_AnchorsTopCenterAtTopMiddle()
+    {
+        _toastService.ShowLoadingToast(new LoadingToastOptions
+        {
+            ToastId = "l1",
+            Title = "Loading",
+            Position = ToastPosition.TopCenter,
+        });
+
+        var component = Render<ToastRackComponent>();
+
+        component.Instance.OnBoundaryChanged(new BoundaryRect
+        {
+            Left = 100,
+            Top = 50,
+            Width = 800,
+            Height = 600,
+        });
+
+        component.WaitForAssertion(() =>
+            // TopCenter anchors at the boundary's top edge, horizontally centered (left+width/2, top).
+            Assert.Contains("left: 500px; top: 50px; max-height: 600px;", component.Markup));
+    }
+
+    [Theory]
+    [InlineData(ToastPosition.TopLeft, "left: 100px; top: 50px;")]
+    [InlineData(ToastPosition.TopRight, "left: 900px; top: 50px;")]
+    [InlineData(ToastPosition.BottomLeft, "left: 100px; top: 650px;")]
+    [InlineData(ToastPosition.BottomCenter, "left: 500px; top: 650px;")]
+    public void BoundaryChange_AnchorsEachPositionToItsCorner(ToastPosition position, string expectedStyle)
+    {
+        _toastService.ShowInfoToast(new ToastOptions
+        {
+            ToastId = "t1",
+            Title = "Anchored",
+            Position = position,
+        });
+
+        var component = Render<ToastRackComponent>();
+
+        component.Instance.OnBoundaryChanged(new BoundaryRect
+        {
+            Left = 100,
+            Top = 50,
+            Width = 800,
+            Height = 600,
+        });
+
+        component.WaitForAssertion(() =>
+            Assert.Contains($"{expectedStyle} max-height: 600px;", component.Markup));
+    }
+
+    [Fact]
+    public void UnknownPosition_FallsBackToBottomLeftClass()
+    {
+        _toastService.ShowInfoToast(new ToastOptions
+        {
+            ToastId = "odd",
+            Title = "Odd",
+            Position = (ToastPosition)999,
+        });
+
+        var component = Render<ToastRackComponent>();
+
+        Assert.Contains("toastrack--bottom-left", component.Markup);
+    }
+
+    [Fact]
+    public async Task DisposeAsync_UnobservesBoundaryWhenObserved()
+    {
+        _module.Setup<bool>("observeBoundary", _ => true).SetResult(true);
+
+        var component = Render<ToastRackComponent>(parameters =>
+            parameters.Add(p => p.BoundarySelector, "#main-content"));
+        component.WaitForAssertion(() => _module.VerifyInvoke("observeBoundary"));
+
+        await ((IAsyncDisposable)component.Instance).DisposeAsync();
+
+        _module.VerifyInvoke("unobserveBoundary");
+    }
+
+    [Fact]
+    public async Task DisposeAsync_IsSafeOnUninitializedComponent()
+    {
+        // Blazor disposes components even when initialization was cut short (e.g. a failed
+        // SetParametersAsync), so disposal must cope with the JS interop and DotNetObjectReference
+        // never having been created. The injected service is assigned via reflection because
+        // the component is deliberately never rendered.
+        var component = new ToastRackComponent();
+        typeof(ToastRackComponent)
+            .GetProperty("ToastService", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .SetValue(component, _toastService);
+
+        await component.DisposeAsync();
+    }
+
+    [Fact]
     public async Task DisposesWithoutError()
     {
         _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l1", Title = "First" });
         _toastService.ShowLoadingToast(new LoadingToastOptions { ToastId = "l2", Title = "Second" });
 
         var component = Render<ToastRackComponent>();
-        component.Find("#toastrack-loading").Click();
 
-        // Wait for the click to register the handler before disposing.
-        component.WaitForAssertion(() => _module.VerifyInvoke("registerOutsideClick"));
-
-        // Disposal unsubscribes from ToastsUpdated and unregisters the outside-click handler.
+        // Disposal unsubscribes from ToastsUpdated; further updates must not re-render.
         await ((IAsyncDisposable)component.Instance).DisposeAsync();
 
-        _module.VerifyInvoke("unregisterOutsideClick");
+        _toastService.ShowInfoToast(new ToastOptions { ToastId = "late", Title = "AfterDispose" });
+        Assert.DoesNotContain("AfterDispose", component.Markup);
     }
 }

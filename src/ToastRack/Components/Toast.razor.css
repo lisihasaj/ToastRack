@@ -122,12 +122,6 @@
   color: var(--toastrack-title-color, #111827);
 }
 
-.toastrack-toast__count {
-  flex: 0 0 auto;
-  font-size: var(--toastrack-font-size, 0.875rem);
-  font-weight: var(--toastrack-title-weight, 500);
-}
-
 /* Action buttons */
 
 .toastrack-action {
@@ -233,15 +227,6 @@
 
 .toastrack-toast--loading {
   background-color: var(--toastrack-loading-bg, #eff6ff);
-}
-
-.toastrack-toast--loading-collapsed {
-  background-color: var(--toastrack-collapsed-bg, #374151);
-}
-
-.toastrack-toast--loading-collapsed .toastrack-toast__title,
-.toastrack-toast--loading-collapsed .toastrack-toast__count {
-  color: var(--toastrack-collapsed-color, #ffffff);
 }
 
 /* Entry animations (classes are assigned by the ToastRack component) */
