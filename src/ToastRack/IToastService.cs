@@ -23,7 +23,7 @@ public interface IToastService
 
     /// <summary>
     /// Shows a toast. If <see cref="ToastOptions.ToastId"/> matches an active toast,
-    /// the call is ignored (dedupe). Error toasts and toasts with actions never auto-expire.
+    /// the call is ignored (dedupe). Toasts with actions never auto-expire.
     /// </summary>
     void ShowToast(ToastOptions options);
 
@@ -33,7 +33,7 @@ public interface IToastService
     /// <summary>Shows a toast with <see cref="ToastVariant.Warning"/>.</summary>
     void ShowWarningToast(ToastOptions options);
 
-    /// <summary>Shows a toast with <see cref="ToastVariant.Error"/>. Error toasts never auto-expire.</summary>
+    /// <summary>Shows a toast with <see cref="ToastVariant.Error"/>.</summary>
     void ShowErrorToast(ToastOptions options);
 
     /// <summary>Shows a toast with <see cref="ToastVariant.Info"/>.</summary>

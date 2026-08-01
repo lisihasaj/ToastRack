@@ -394,7 +394,7 @@ public class ToastViewTests : BunitContext
     }
 
     [Fact]
-    public async Task Toast_MouseEnter_PausesExpiryForNonErrorVariant()
+    public async Task Toast_MouseEnter_PausesExpiry()
     {
         _toastService.ShowSuccessToast(new ToastOptions { ToastId = "pause", Title = "Hover me", Expiry = 5 });
         var item = _toastService.Toasts.Single();

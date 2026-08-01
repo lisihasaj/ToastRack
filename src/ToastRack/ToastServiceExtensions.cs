@@ -23,7 +23,7 @@ public static class ToastServiceExtensions
         ToastPosition position = ToastPosition.BottomLeft) =>
         service.ShowWarningToast(new ToastOptions { Title = title, Caption = caption, Position = position });
 
-    /// <summary>Shows an error toast with the given texts. Error toasts never auto-expire.</summary>
+    /// <summary>Shows an error toast with the given texts.</summary>
     public static void Error(
         this IToastService service,
         string title,

@@ -198,8 +198,8 @@ in your app's CSS (e.g. on `:root`):
 
 Behavior notes:
 
-- Error toasts and toasts with actions never auto-expire; everything else defaults to 5 seconds (`Expiry` overrides it).
-- Hovering a toast pauses its expiry timer (except error/loading toasts, which don't expire).
+- Toasts with actions never auto-expire; everything else defaults to 5 seconds (`Expiry` overrides it).
+- Hovering a toast pauses its expiry timer (except loading toasts, which don't expire).
 - The service is thread-safe, so background work can show and update toasts (in Blazor Server too).
 
 ## Sample

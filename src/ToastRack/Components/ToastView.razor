@@ -110,7 +110,7 @@
 
     private bool CanPauseOnHover =>
         Item.ExpiresAt != DateTimeOffset.MaxValue
-        && Item.Variant is not (ToastVariant.Loading or ToastVariant.LoadingCollapsed or ToastVariant.Error);
+        && Item.Variant is not (ToastVariant.Loading or ToastVariant.LoadingCollapsed);
 
     private static string VariantClass(ToastVariant variant)
     {
