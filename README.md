@@ -6,6 +6,8 @@
 
 A lightweight, **dependency-free** toast notification library for Blazor — WebAssembly and Server.
 
+**[▶ Live interactive demo](https://lisihasaj.github.io/ToastRack/)** — try every variant, position and loading flow in the browser.
+
 - ✅ Success / warning / error / info variants with built-in inline SVG icons (no icon font needed)
 - ⏳ Loading toasts with indeterminate spinner **or determinate progress circle**, resolved into a regular toast when the work finishes — they stack at any position alongside every other variant
 - 🔘 Action buttons (undo / retry / …) — toasts with actions never auto-expire
@@ -163,6 +165,8 @@ in your app's CSS (e.g. on `:root`):
 | `--toastrack-shadow` | soft two-layer shadow | Toast box shadow |
 | `--toastrack-padding` | `1rem` | Toast padding |
 | `--toastrack-gap` | `0.5rem` | Gap between icon / content / close |
+| `--toastrack-content-gap` | `0.125rem` | Gap between title and caption |
+| `--toastrack-actions-gap` | `0.25rem` | Gap between action buttons and above the action row |
 | `--toastrack-stack-gap` | `0.5rem` | Gap between stacked toasts |
 | `--toastrack-edge-gap` | `0.5rem` | Distance from the anchoring edge |
 | `--toastrack-shadow-gap` | `1rem` | Inset around the toast stack that keeps shadows from being clipped by the scroll container |
@@ -207,11 +211,22 @@ Behavior notes:
 
 ## Sample
 
-A full demo lives in [`samples/ToastRack.Sample`](samples/ToastRack.Sample):
+The sample app is published to GitHub Pages and is the quickest way to see the library in action:
+
+**https://lisihasaj.github.io/ToastRack/**
+
+It exercises every variant, all six positions, action buttons, custom icons and fragments, and the
+loading → progress → resolve flow. Toasts on that page are anchored to the `<main>` element via
+`BoundarySelector`, so resizing the window shows the boundary tracking at work.
+
+The source lives in [`samples/ToastRack.Sample`](samples/ToastRack.Sample) and runs locally with:
 
 ```bash
 dotnet run --project samples/ToastRack.Sample
 ```
+
+Every push to `main` redeploys the site via the
+[Pages workflow](.github/workflows/deploy-pages.yml).
 
 ## Development
 
