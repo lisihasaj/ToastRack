@@ -1,87 +1,596 @@
 @page "/"
+@using System.Text
 @inject IToastService Toasts
+@inject DemoState Demo
+@inject IJSRuntime JS
 
-<PageTitle>ToastRack demo</PageTitle>
+<PageTitle>ToastRack — toast notifications for Blazor</PageTitle>
 
-<h1>🍞 ToastRack</h1>
-<p class="lead">
-    A lightweight, dependency-free toast notification library for Blazor.
-    Toasts are anchored to the <code>&lt;main&gt;</code> element on this page
-    (via <code>BoundarySelector</code>), so they respect the sidebar — resize the window to see them follow.
-</p>
+<section class="hero">
+    <div class="chips">
+        <span class="chip">Blazor WebAssembly &amp; Server</span>
+        <span class="chip">.NET 8 · 9 · 10</span>
+        <span class="chip">Zero dependencies</span>
+        <span class="chip">MIT licensed</span>
+    </div>
+    <h1 class="hero-title">Delightful toasts for <span class="hero-accent">Blazor</span></h1>
+    <p class="hero-tagline">
+        ToastRack is a lightweight, dependency-free toast notification library.
+        Six stacking positions, loading and progress toasts, action buttons and full CSS theming —
+        with accessibility built in and no JavaScript packages to install.
+    </p>
+    <div class="hero-actions">
+        <button class="btn btn-primary btn-lg" @onclick="ShowHeroToast">Show me a toast</button>
+        <div class="install">
+            <code>dotnet add package ToastRack</code>
+            <button class="install-copy" type="button" @onclick="CopyInstallAsync">
+                @(_installCopied ? "Copied ✓" : "Copy")
+            </button>
+        </div>
+    </div>
+    <p class="hero-hint">Every demo on this page fires real toasts — and shows the exact code to reproduce it.</p>
+</section>
 
-<h4>Variants</h4>
-<div class="demo-row">
-    <select class="form-select demo-select" @bind="_position">
-        <option value="@ToastPosition.TopLeft">Top left</option>
-        <option value="@ToastPosition.TopCenter">Top center</option>
-        <option value="@ToastPosition.TopRight">Top right</option>
-        <option value="@ToastPosition.BottomLeft">Bottom left</option>
-        <option value="@ToastPosition.BottomCenter">Bottom center</option>
-        <option value="@ToastPosition.BottomRight">Bottom right</option>
-    </select>
-    <button class="btn btn-success" @onclick="ShowSuccess">Success</button>
-    <button class="btn btn-warning" @onclick="ShowWarning">Warning</button>
-    <button class="btn btn-danger" @onclick="ShowError">Error (no auto-expiry)</button>
-    <button class="btn btn-primary" @onclick="ShowInfo">Info</button>
-</div>
+<section class="features" id="features">
+    <div class="feature-grid">
+        <div class="feature">
+            <span class="feature-icon">🪶</span>
+            <h3>Lightweight &amp; dependency-free</h3>
+            <p>No icon fonts, no JS libraries, no CSS frameworks. One NuGet package with a thread-safe service that works in WebAssembly and Server.</p>
+        </div>
+        <div class="feature">
+            <span class="feature-icon">⏳</span>
+            <h3>Loading &amp; progress toasts</h3>
+            <p>Indeterminate spinner or a determinate progress circle, resolved in place into a success, error, warning or info toast when the work finishes.</p>
+        </div>
+        <div class="feature">
+            <span class="feature-icon">🔘</span>
+            <h3>Action buttons</h3>
+            <p>Undo, retry or any custom action. Toasts with actions never auto-expire, so users always have time to respond.</p>
+        </div>
+        <div class="feature">
+            <span class="feature-icon">📍</span>
+            <h3>Six positions + boundary</h3>
+            <p>All four corners plus top and bottom center — anchored to the viewport, or to any element of your app via a <code>ResizeObserver</code>-tracked boundary.</p>
+        </div>
+        <div class="feature">
+            <span class="feature-icon">🎨</span>
+            <h3>Themable end to end</h3>
+            <p>Every color, size, radius and font is a <code>--toastrack-*</code> CSS custom property with a sensible default. Restyle without touching C#.</p>
+        </div>
+        <div class="feature">
+            <span class="feature-icon">🧩</span>
+            <h3>Custom content</h3>
+            <p>Swap the icon or replace the whole toast body with any <code>RenderFragment</code> — the shell only provides shadow, radius and stacking.</p>
+        </div>
+        <div class="feature">
+            <span class="feature-icon">♿</span>
+            <h3>Accessible by default</h3>
+            <p><code>role="status"</code> / <code>role="alert"</code>, progressbar ARIA attributes and <code>prefers-reduced-motion</code> support out of the box.</p>
+        </div>
+        <div class="feature">
+            <span class="feature-icon">⏸</span>
+            <h3>Considerate timing</h3>
+            <p>Hovering a toast pauses its expiry timer. Duplicate ids are deduplicated. Everything can be removed programmatically.</p>
+        </div>
+    </div>
+</section>
 
-<h4>Actions &amp; custom content</h4>
-<div class="demo-row">
-    <button class="btn btn-outline-primary" @onclick="ShowActionToast">With actions (Undo)</button>
-    <button class="btn btn-outline-primary" @onclick="ShowCustomIconToast">Custom icon</button>
-    <button class="btn btn-outline-primary" @onclick="ShowCustomFragmentToast">Custom fragment</button>
-</div>
+<section class="setup" id="quick-start">
+    <h2>Quick start</h2>
+    <p class="section-lead">Three steps and you are showing toasts. That's the whole setup.</p>
 
-<h4>Loading toasts</h4>
-<p class="hint">Loading toasts stack at the selected position alongside every other variant; the result toast appears in the same spot.</p>
-<div class="demo-row">
-    <button class="btn btn-outline-secondary" @onclick="ShowLoadingToast">Indeterminate (resolves in 4s)</button>
-    <button class="btn btn-outline-secondary" @onclick="ShowProgressToast">With progress (resolves at 100%)</button>
-    <button class="btn btn-outline-danger" @onclick="ShowFailingLoadingToast">Failing task (resolves as error)</button>
-</div>
+    <div class="setup-steps">
+        <div class="setup-step">
+            <div class="setup-step-head"><span class="step-no">1</span><h3>Install and register the service</h3></div>
+            <CodeBlock Label="Program.cs" Code="@SetupServiceSnippet" />
+        </div>
+        <div class="setup-step">
+            <div class="setup-step-head"><span class="step-no">2</span><h3>Place the component once in your layout</h3></div>
+            <CodeBlock Label="MainLayout.razor" Code="@SetupLayoutSnippet" />
+            <p class="setup-note">
+                ToastRack's styles ship as scoped CSS, so make sure your host page links the CSS bundle —
+                present by default in the Blazor templates:
+            </p>
+            <CodeBlock Label="index.html / App.razor" Code="@SetupCssSnippet" />
+        </div>
+        <div class="setup-step">
+            <div class="setup-step-head"><span class="step-no">3</span><h3>Show toasts from anywhere</h3></div>
+            <CodeBlock Label="AnyComponent.razor" Code="@SetupUseSnippet" />
+        </div>
+    </div>
+</section>
 
-@if (_undoMessage is not null)
+<div id="demos"></div>
+
+<section class="demo">
+    <div class="demo-head">
+        <h2>Variants</h2>
+        <p>
+            Success, warning, error and info — each with a built-in inline SVG icon.
+            Toasts auto-expire after 5 seconds by default; hover one to pause its timer,
+            or set <code>Expiry</code> for full control.
+        </p>
+    </div>
+    <div class="demo-body">
+        <div class="demo-panel">
+            <label class="field-label" for="variant-position">Position for these demos</label>
+            <select id="variant-position" class="field" @bind="_position">
+                <option value="@ToastPosition.TopLeft">Top left</option>
+                <option value="@ToastPosition.TopCenter">Top center</option>
+                <option value="@ToastPosition.TopRight">Top right</option>
+                <option value="@ToastPosition.BottomLeft">Bottom left</option>
+                <option value="@ToastPosition.BottomCenter">Bottom center</option>
+                <option value="@ToastPosition.BottomRight">Bottom right</option>
+            </select>
+            <div class="btn-row">
+                <button class="btn btn-success" @onclick="ShowSuccess">Success</button>
+                <button class="btn btn-warning" @onclick="ShowWarning">Warning</button>
+                <button class="btn btn-danger" @onclick="ShowError">Error</button>
+                <button class="btn btn-info" @onclick="ShowInfo">Info</button>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-outline" @onclick="ShowLongLived">15-second toast (custom expiry)</button>
+            </div>
+        </div>
+        <CodeBlock Label="C#" Code="@VariantsSnippet" />
+    </div>
+</section>
+
+<section class="demo">
+    <div class="demo-head">
+        <h2>Six stacking positions</h2>
+        <p>
+            Toasts stack independently at each position, newest closest to the edge on bottom anchors.
+            Click around the stage — mix positions freely.
+        </p>
+    </div>
+    <div class="demo-body">
+        <div class="demo-panel pos-stage-wrap">
+            <div class="pos-stage">
+                <button class="btn btn-outline pos-btn pos-tl" @onclick="() => ShowAt(ToastPosition.TopLeft)">Top left</button>
+                <button class="btn btn-outline pos-btn pos-tc" @onclick="() => ShowAt(ToastPosition.TopCenter)">Top center</button>
+                <button class="btn btn-outline pos-btn pos-tr" @onclick="() => ShowAt(ToastPosition.TopRight)">Top right</button>
+                <button class="btn btn-outline pos-btn pos-bl" @onclick="() => ShowAt(ToastPosition.BottomLeft)">Bottom left</button>
+                <button class="btn btn-outline pos-btn pos-bc" @onclick="() => ShowAt(ToastPosition.BottomCenter)">Bottom center</button>
+                <button class="btn btn-outline pos-btn pos-br" @onclick="() => ShowAt(ToastPosition.BottomRight)">Bottom right</button>
+            </div>
+        </div>
+        <CodeBlock Label="C#" Code="@PositionsSnippet" />
+    </div>
+</section>
+
+<section class="demo">
+    <div class="demo-head">
+        <h2>Action buttons</h2>
+        <p>
+            Attach primary, outline or text-styled actions. A toast with actions never auto-expires,
+            and invoking an action closes it. Try the undo below — it answers with another toast.
+        </p>
+    </div>
+    <div class="demo-body">
+        <div class="demo-panel">
+            <div class="btn-row">
+                <button class="btn btn-primary" @onclick="ShowActionToast">Delete an item (with Undo)</button>
+            </div>
+        </div>
+        <CodeBlock Label="C#" Code="@ActionsSnippet" />
+    </div>
+</section>
+
+<section class="demo">
+    <div class="demo-head">
+        <h2>Loading, progress &amp; resolve</h2>
+        <p>
+            Loading toasts stack at any position alongside every other variant and never auto-expire.
+            Call <code>Progress</code> as work advances and <code>Resolve</code> to replace the loading
+            toast in place with a result toast — success or failure.
+        </p>
+    </div>
+    <div class="demo-body">
+        <div class="demo-panel">
+            <div class="btn-row">
+                <button class="btn btn-outline" @onclick="ShowLoadingToast">Indeterminate — resolves in 4 s</button>
+                <button class="btn btn-outline" @onclick="ShowProgressToast">With progress circle</button>
+                <button class="btn btn-outline btn-outline-danger" @onclick="ShowFailingLoadingToast">Failing task — resolves as error</button>
+            </div>
+            <p class="panel-hint">Uses the position selected in the Variants section (@PositionLabel(_position)).</p>
+        </div>
+        <CodeBlock Label="C#" Code="@LoadingSnippet" />
+    </div>
+</section>
+
+<section class="demo">
+    <div class="demo-head">
+        <h2>Custom icon &amp; custom content</h2>
+        <p>
+            Replace the built-in icon with any <code>RenderFragment</code>, or take over the entire toast
+            body with <code>ToastVariant.Custom</code> — the shell then only provides shadow, radius and stacking.
+        </p>
+    </div>
+    <div class="demo-body">
+        <div class="demo-panel">
+            <div class="btn-row">
+                <button class="btn btn-outline" @onclick="ShowCustomIconToast">Custom icon 🎉</button>
+                <button class="btn btn-outline" @onclick="ShowCustomFragmentToast">Fully custom fragment</button>
+            </div>
+        </div>
+        <CodeBlock Label="C#" Code="@CustomSnippet" />
+    </div>
+</section>
+
+<section class="demo">
+    <div class="demo-head">
+        <h2>Deduplication &amp; programmatic removal</h2>
+        <p>
+            Give a toast a <code>ToastId</code> and repeated calls with the same id are ignored while it is
+            visible — spam the button below and only one toast appears. The same id also lets you remove
+            the toast from code, e.g. when the outage it reports is over.
+        </p>
+    </div>
+    <div class="demo-body">
+        <div class="demo-panel">
+            <div class="btn-row">
+                <button class="btn btn-danger" @onclick="ShowDedupedToast">Report outage (id "api-down")</button>
+                <button class="btn btn-outline" @onclick="RemoveDedupedToast">Remove "api-down"</button>
+            </div>
+        </div>
+        <CodeBlock Label="C#" Code="@DedupeSnippet" />
+    </div>
+</section>
+
+<section class="demo">
+    <div class="demo-head">
+        <h2>Anchor toasts to your content area</h2>
+        <p>
+            Apps with fixed sidebars or headers can anchor toasts to the main content element instead of
+            the viewport with a single parameter. The element is tracked with a <code>ResizeObserver</code> —
+            no manual wiring. Open the demo app below and watch toasts respect its sidebar.
+        </p>
+    </div>
+    <div class="demo-body">
+        <div class="demo-panel">
+            <div class="btn-row">
+                <button class="btn btn-primary" @onclick="OpenBoundaryDemo">Open the boundary demo</button>
+            </div>
+            <p class="panel-hint">Opens a mock app window — toasts anchor to its content area, not the screen.</p>
+        </div>
+        <CodeBlock Label="MainLayout.razor" Code="@BoundarySnippet" />
+    </div>
+</section>
+
+<section class="demo" id="theming">
+    <div class="demo-head">
+        <h2>Theming</h2>
+        <p>
+            Every color, size and font is a <code>--toastrack-*</code> CSS custom property.
+            Switch a theme below, then fire any toast on this page — no C# involved, just CSS.
+        </p>
+    </div>
+    <div class="demo-body">
+        <div class="demo-panel">
+            <div class="btn-row">
+                <button class="btn @ThemeButtonClass("")" @onclick="@(() => SetTheme(""))">Default</button>
+                <button class="btn @ThemeButtonClass("theme-dark")" @onclick="@(() => SetTheme("theme-dark"))">Dark</button>
+                <button class="btn @ThemeButtonClass("theme-soft")" @onclick="@(() => SetTheme("theme-soft"))">Soft</button>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-outline" @onclick="PreviewTheme">Preview the active theme</button>
+            </div>
+        </div>
+        <CodeBlock Label="app.css — dark theme" Code="@ThemingSnippet" />
+    </div>
+</section>
+
+<section class="playground" id="playground">
+    <div class="demo-head">
+        <h2>Playground</h2>
+        <p>
+            Compose a toast and get the exact code for it. The snippet updates as you type —
+            copy it straight into your app.
+        </p>
+    </div>
+    <div class="demo-body">
+        <div class="demo-panel playground-form">
+            <div class="pg-grid">
+                <div class="pg-field">
+                    <label class="field-label" for="pg-variant">Variant</label>
+                    <select id="pg-variant" class="field" @bind="_pgVariant">
+                        <option value="@ToastVariant.Success">Success</option>
+                        <option value="@ToastVariant.Warning">Warning</option>
+                        <option value="@ToastVariant.Error">Error</option>
+                        <option value="@ToastVariant.Info">Info</option>
+                    </select>
+                </div>
+                <div class="pg-field">
+                    <label class="field-label" for="pg-position">Position</label>
+                    <select id="pg-position" class="field" @bind="_pgPosition">
+                        <option value="@ToastPosition.TopLeft">Top left</option>
+                        <option value="@ToastPosition.TopCenter">Top center</option>
+                        <option value="@ToastPosition.TopRight">Top right</option>
+                        <option value="@ToastPosition.BottomLeft">Bottom left</option>
+                        <option value="@ToastPosition.BottomCenter">Bottom center</option>
+                        <option value="@ToastPosition.BottomRight">Bottom right</option>
+                    </select>
+                </div>
+                <div class="pg-field">
+                    <label class="field-label" for="pg-title">Title</label>
+                    <input id="pg-title" class="field" @bind="_pgTitle" @bind:event="oninput" maxlength="60" />
+                </div>
+                <div class="pg-field">
+                    <label class="field-label" for="pg-caption">Caption</label>
+                    <input id="pg-caption" class="field" @bind="_pgCaption" @bind:event="oninput" maxlength="90" placeholder="Optional" />
+                </div>
+                <div class="pg-field">
+                    <label class="field-label" for="pg-expiry">Expiry (seconds)</label>
+                    <input id="pg-expiry" class="field" type="number" min="1" max="60" @bind="_pgExpiry" @bind:event="oninput" placeholder="Default (5)" />
+                </div>
+                <div class="pg-field pg-field-check">
+                    <label class="check">
+                        <input type="checkbox" @bind="_pgWithActions" />
+                        <span>Add Undo / Dismiss actions</span>
+                    </label>
+                </div>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-primary" @onclick="ShowPlaygroundToast">Show this toast</button>
+            </div>
+        </div>
+        <CodeBlock Label="Generated C#" Code="@PlaygroundCode" />
+    </div>
+</section>
+
+@if (_boundaryDemoOpen)
 {
-    <div class="alert alert-info mt-3">@_undoMessage</div>
+    <div class="mockapp-backdrop">
+        <div class="mockapp">
+            <header class="mockapp-top">
+                <span class="mockapp-title">Acme Dashboard — a mock app with a fixed sidebar</span>
+                <button class="btn btn-outline mockapp-close" @onclick="CloseBoundaryDemo">✕ Exit demo</button>
+            </header>
+            <div class="mockapp-body">
+                <aside class="mockapp-side">
+                    <div class="mockapp-navitem mockapp-navitem-active">Dashboard</div>
+                    <div class="mockapp-navitem">Orders</div>
+                    <div class="mockapp-navitem">Customers</div>
+                    <div class="mockapp-navitem">Reports</div>
+                    <div class="mockapp-navitem">Settings</div>
+                </aside>
+                <main class="mockapp-main">
+                    <h3>Toasts are anchored to this content area</h3>
+                    <p>
+                        This window uses <code>&lt;ToastRack BoundarySelector=".mockapp-main" /&gt;</code>.
+                        Fire toasts at any position — they stay inside the content area and never cover
+                        the sidebar or the header. Resize the browser window and they follow.
+                    </p>
+                    <div class="btn-row">
+                        <button class="btn btn-outline" @onclick="() => ShowBoundaryToast(ToastPosition.TopLeft)">Top left</button>
+                        <button class="btn btn-outline" @onclick="() => ShowBoundaryToast(ToastPosition.TopRight)">Top right</button>
+                        <button class="btn btn-outline" @onclick="() => ShowBoundaryToast(ToastPosition.BottomLeft)">Bottom left</button>
+                        <button class="btn btn-outline" @onclick="() => ShowBoundaryToast(ToastPosition.BottomRight)">Bottom right</button>
+                        <button class="btn btn-outline" @onclick="ShowBoundaryLoadingToast">Loading toast</button>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
 }
 
 @code {
-    private ToastPosition _position = ToastPosition.BottomLeft;
-    private int _counter;
-    private string? _undoMessage;
 
-    private void ShowSuccess() =>
+    private const string SetupServiceSnippet =
+        """
+        builder.Services.AddToastRack();
+        """;
+
+    private const string SetupLayoutSnippet =
+        """
+        @using ToastRack.Components
+
+        <ToastRack />
+        """;
+
+    private const string SetupCssSnippet =
+        """
+        <link href="YourApp.styles.css" rel="stylesheet" />
+        """;
+
+    private const string SetupUseSnippet =
+        """
+        @inject IToastService Toasts
+
+        Toasts.Success("Saved", "Your changes were saved successfully.");
+        """;
+
+    private const string VariantsSnippet =
+        """
+        Toasts.Success("Saved", "Your changes were saved successfully.");
+        Toasts.Warning("Heads up", "This file was modified by someone else.");
+        Toasts.Error("Something went wrong", "The request failed.");
+        Toasts.Info("Did you know?", "Hover a toast to pause its expiry timer.");
+
+        Toasts.ShowInfoToast(new ToastOptions
+        {
+            Title = "Long-lived",
+            Caption = "This toast stays for 15 seconds.",
+            Expiry = 15,
+        });
+        """;
+
+    private const string PositionsSnippet =
+        """
+        Toasts.Info("Top right", position: ToastPosition.TopRight);
+
         Toasts.ShowSuccessToast(new ToastOptions
         {
             Title = "Saved",
-            Caption = "Your changes were saved successfully.",
-            Position = _position,
+            Position = ToastPosition.BottomCenter,
         });
+        """;
 
-    private void ShowWarning() =>
-        Toasts.ShowWarningToast(new ToastOptions
-        {
-            Title = "Heads up",
-            Caption = "This file was modified by someone else.",
-            Position = _position,
-        });
-
-    private void ShowError() =>
-        Toasts.ShowErrorToast(new ToastOptions
-        {
-            Title = "Something went wrong",
-            Caption = "The request failed. Error toasts stay until dismissed.",
-            Position = _position,
-        });
-
-    private void ShowInfo() =>
+    private const string ActionsSnippet =
+        """
         Toasts.ShowInfoToast(new ToastOptions
         {
-            Title = "Did you know?",
-            Caption = "You can hover a toast to pause its expiry timer.",
-            Position = _position,
+            Title = "Item deleted",
+            Caption = "The item was removed from your list.",
+            Actions =
+            [
+                new ToastAction { Label = "Undo", OnClick = RestoreItem },
+                new ToastAction { Label = "Dismiss", Style = ToastActionStyle.Text },
+            ],
         });
+        """;
+
+    private const string LoadingSnippet =
+        """
+        Toasts.Loading("upload", "Uploading...", showProgress: true);
+
+        Toasts.Progress("upload", 60);
+
+        Toasts.Resolve("upload", ToastVariant.Success, "Uploaded");
+
+        Toasts.Loading("sync", "Syncing...");
+        Toasts.Resolve("sync", ToastVariant.Error, "Sync failed", "The server did not respond.");
+        """;
+
+    private const string CustomSnippet =
+        """
+        Toasts.ShowSuccessToast(new ToastOptions
+        {
+            Title = "Custom icon",
+            Caption = "Any RenderFragment works as the icon.",
+            Icon = @<span>🎉</span>,
+        });
+
+        Toasts.ShowToast(new ToastOptions
+        {
+            Variant = ToastVariant.Custom,
+            Fragment = @<div class="my-toast">Hello!</div>,
+        });
+        """;
+
+    private const string DedupeSnippet =
+        """
+        Toasts.ShowErrorToast(new ToastOptions
+        {
+            ToastId = "api-down",
+            Title = "API unavailable",
+            Caption = "We'll keep retrying in the background.",
+            Expiry = 20,
+        });
+
+        Toasts.RemoveToast("api-down");
+        """;
+
+    private const string BoundarySnippet =
+        """
+        <ToastRack BoundarySelector="main" />
+        """;
+
+    private const string ThemingSnippet =
+        """
+        :root {
+          --toastrack-title-color: #f8fafc;
+          --toastrack-caption-color: #94a3b8;
+          --toastrack-success-bg: #064e3b;
+          --toastrack-success-accent: #34d399;
+          --toastrack-error-bg: #450a0a;
+          --toastrack-error-accent: #f87171;
+          --toastrack-radius: 0.5rem;
+          --toastrack-font-family: "Inter", sans-serif;
+        }
+        """;
+
+    private ToastPosition _position = ToastPosition.BottomRight;
+    private int _counter;
+    private int _heroClicks;
+    private bool _installCopied;
+    private bool _boundaryDemoOpen;
+    private string _activeTheme = "";
+
+    private ToastVariant _pgVariant = ToastVariant.Success;
+    private ToastPosition _pgPosition = ToastPosition.BottomRight;
+    private string _pgTitle = "Order shipped";
+    private string _pgCaption = "Tracking number sent to your inbox.";
+    private int? _pgExpiry;
+    private bool _pgWithActions;
+
+    private static string PositionLabel(ToastPosition position) => position switch
+    {
+        ToastPosition.TopLeft => "top left",
+        ToastPosition.TopCenter => "top center",
+        ToastPosition.TopRight => "top right",
+        ToastPosition.BottomLeft => "bottom left",
+        ToastPosition.BottomCenter => "bottom center",
+        _ => "bottom right",
+    };
+
+    private async Task CopyInstallAsync()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", "dotnet add package ToastRack");
+        }
+        catch (JSException)
+        {
+            return;
+        }
+
+        _installCopied = true;
+        StateHasChanged();
+        await Task.Delay(1600);
+        _installCopied = false;
+    }
+
+    private void ShowHeroToast()
+    {
+        switch (_heroClicks++ % 4)
+        {
+            case 0:
+                Toasts.Success("Fresh out of the rack 🍞", "This is ToastRack with its default styling.", _position);
+                break;
+            case 1:
+                Toasts.Info("There's more", "Keep clicking — or scroll down to drive every feature yourself.", _position);
+                break;
+            case 2:
+                Toasts.Warning("Careful, it's hot", "Toasts stack neatly at six positions.", _position);
+                break;
+            default:
+                Toasts.Error("Okay, last one", "Errors look like this. The demos below show the rest.", _position);
+                break;
+        }
+    }
+
+    private void ShowSuccess() =>
+        Toasts.Success("Saved", "Your changes were saved successfully.", _position);
+
+    private void ShowWarning() =>
+        Toasts.Warning("Heads up", "This file was modified by someone else.", _position);
+
+    private void ShowError() =>
+        Toasts.Error("Something went wrong", "The request failed.", _position);
+
+    private void ShowInfo() =>
+        Toasts.Info("Did you know?", "Hover a toast to pause its expiry timer.", _position);
+
+    private void ShowLongLived() =>
+        Toasts.ShowInfoToast(new ToastOptions
+        {
+            Title = "Long-lived",
+            Caption = "This toast stays for 15 seconds.",
+            Position = _position,
+            Expiry = 15,
+        });
+
+    private static string TitleFor(ToastPosition position)
+    {
+        var label = PositionLabel(position);
+        return char.ToUpperInvariant(label[0]) + label[1..];
+    }
+
+    private void ShowAt(ToastPosition position) =>
+        Toasts.Info(TitleFor(position), "Toasts stack here in insertion order.", position);
 
     private void ShowActionToast() =>
         Toasts.ShowInfoToast(new ToastOptions
@@ -93,19 +602,51 @@
             [
                 new ToastAction
                 {
-                    Id = "undo",
                     Label = "Undo",
                     Style = ToastActionStyle.Primary,
-                    OnClick = () => _undoMessage = "Undo clicked — item restored!",
+                    OnClick = () => Toasts.Success("Restored", "The item is back in your list.", _position),
                 },
                 new ToastAction
                 {
-                    Id = "dismiss",
                     Label = "Dismiss",
                     Style = ToastActionStyle.Text,
                 },
             ],
         });
+
+    private async Task ShowLoadingToast()
+    {
+        var id = $"loading-{++_counter}";
+        Toasts.Loading(id, $"Loading data #{_counter}...", position: _position);
+
+        await Task.Delay(4000);
+
+        Toasts.Resolve(id, ToastVariant.Success, "Loaded", $"Task #{_counter} finished.");
+    }
+
+    private async Task ShowProgressToast()
+    {
+        var id = $"progress-{++_counter}";
+        Toasts.Loading(id, $"Uploading file #{_counter}...", showProgress: true, position: _position);
+
+        for (var percentage = 10; percentage <= 100; percentage += 10)
+        {
+            await Task.Delay(400);
+            Toasts.Progress(id, percentage);
+        }
+
+        Toasts.Resolve(id, ToastVariant.Success, "Uploaded", "Your file was uploaded.");
+    }
+
+    private async Task ShowFailingLoadingToast()
+    {
+        var id = $"failing-{++_counter}";
+        Toasts.Loading(id, $"Syncing #{_counter}...", position: _position);
+
+        await Task.Delay(2500);
+
+        Toasts.Resolve(id, ToastVariant.Error, "Sync failed", "The server did not respond.");
+    }
 
     private void ShowCustomIconToast() =>
         Toasts.ShowSuccessToast(new ToastOptions
@@ -127,72 +668,134 @@
                        </div>,
         });
 
-    private async Task ShowLoadingToast()
-    {
-        var id = $"loading-{++_counter}";
-        Toasts.ShowLoadingToast(new LoadingToastOptions
+    private void ShowDedupedToast() =>
+        Toasts.ShowErrorToast(new ToastOptions
         {
-            ToastId = id,
-            Title = $"Loading data #{_counter}...",
+            ToastId = "api-down",
+            Title = "API unavailable",
+            Caption = "We'll keep retrying in the background.",
             Position = _position,
+            Expiry = 20,
         });
 
-        await Task.Delay(4000);
+    private void RemoveDedupedToast() => Toasts.RemoveToast("api-down");
 
-        // No Position given: the result toast keeps the loading toast's position.
-        Toasts.ResolveLoadingToast(new ResolveToastOptions
-        {
-            ToastId = id,
-            ReplaceWith = ToastVariant.Success,
-            Title = "Loaded",
-            Caption = $"Task #{_counter} finished.",
-        });
+    private async Task OpenBoundaryDemo()
+    {
+        _boundaryDemoOpen = true;
+        StateHasChanged();
+        Demo.SetBoundary(".mockapp-main");
+
+        await Task.Delay(400);
+        Toasts.Info("Anchored!", "This toast is bound to the content area.", ToastPosition.BottomRight);
     }
 
-    private async Task ShowProgressToast()
+    private void CloseBoundaryDemo()
     {
-        var id = $"progress-{++_counter}";
-        Toasts.ShowLoadingToast(new LoadingToastOptions
-        {
-            ToastId = id,
-            Title = $"Uploading file #{_counter}...",
-            IsProgress = true,
-            Position = _position,
-        });
+        _boundaryDemoOpen = false;
+        Demo.SetBoundary(null);
+    }
 
-        for (var percentage = 10; percentage <= 100; percentage += 10)
+    private void ShowBoundaryToast(ToastPosition position) =>
+        Toasts.Info(TitleFor(position), "Bound to the content area — not the viewport.", position);
+
+    private async Task ShowBoundaryLoadingToast()
+    {
+        var id = $"bound-{++_counter}";
+        Toasts.Loading(id, "Refreshing dashboard...", showProgress: true, position: ToastPosition.TopRight);
+
+        for (var percentage = 20; percentage <= 100; percentage += 20)
         {
-            await Task.Delay(400);
-            Toasts.UpdateLoadingToastProgress(new ToastProgressUpdate { ToastId = id, Percentage = percentage });
+            await Task.Delay(350);
+            Toasts.Progress(id, percentage);
         }
 
-        Toasts.ResolveLoadingToast(new ResolveToastOptions
-        {
-            ToastId = id,
-            ReplaceWith = ToastVariant.Success,
-            Title = "Uploaded",
-            Caption = "Your file was uploaded.",
-        });
+        Toasts.Resolve(id, ToastVariant.Success, "Up to date");
     }
 
-    private async Task ShowFailingLoadingToast()
+    private string ThemeButtonClass(string theme) =>
+        _activeTheme == theme ? "btn-primary" : "btn-outline";
+
+    private void SetTheme(string theme)
     {
-        var id = $"failing-{++_counter}";
-        Toasts.ShowLoadingToast(new LoadingToastOptions
+        _activeTheme = theme;
+        Demo.SetTheme(theme);
+    }
+
+    private void PreviewTheme()
+    {
+        Toasts.Success("Theme preview", "Pure CSS — no C# changes needed.", _position);
+        Toasts.ShowErrorToast(new ToastOptions
         {
-            ToastId = id,
-            Title = $"Syncing #{_counter}...",
+            Title = "Errors too",
+            Caption = "Every variant follows the theme.",
             Position = _position,
         });
-
-        await Task.Delay(2500);
-
-        Toasts.ResolveLoadingToast(new ResolveToastOptions
-        {
-            ToastId = id,
-            ReplaceWith = ToastVariant.Error,
-            Title = "Sync failed",
-            Caption = "The server did not respond.",
-        });
     }
+
+    private string PlaygroundCode
+    {
+        get
+        {
+            var title = Quote(_pgTitle);
+            var hasCaption = !string.IsNullOrWhiteSpace(_pgCaption);
+
+            if (_pgExpiry is null && !_pgWithActions)
+            {
+                var args = new List<string> { $"\"{title}\"" };
+                if (hasCaption) args.Add($"\"{Quote(_pgCaption)}\"");
+                if (_pgPosition != ToastPosition.BottomLeft) args.Add($"position: ToastPosition.{_pgPosition}");
+                return $"Toasts.{_pgVariant}({string.Join(", ", args)});";
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"Toasts.Show{_pgVariant}Toast(new ToastOptions");
+            sb.AppendLine("{");
+            sb.AppendLine($"    Title = \"{title}\",");
+            if (hasCaption) sb.AppendLine($"    Caption = \"{Quote(_pgCaption)}\",");
+            if (_pgPosition != ToastPosition.BottomLeft) sb.AppendLine($"    Position = ToastPosition.{_pgPosition},");
+            if (_pgExpiry is { } expiry) sb.AppendLine($"    Expiry = {expiry},");
+            if (_pgWithActions)
+            {
+                sb.AppendLine("    Actions =");
+                sb.AppendLine("    [");
+                sb.AppendLine("        new ToastAction { Label = \"Undo\", OnClick = Undo },");
+                sb.AppendLine("        new ToastAction { Label = \"Dismiss\", Style = ToastActionStyle.Text },");
+                sb.AppendLine("    ],");
+            }
+
+            sb.Append("});");
+            return sb.ToString();
+        }
+    }
+
+    private static string Quote(string value) =>
+        value.Replace("\\", "\\\\").Replace("\"", "\\\"");
+
+    private void ShowPlaygroundToast() =>
+        Toasts.ShowToast(new ToastOptions
+        {
+            Variant = _pgVariant,
+            Position = _pgPosition,
+            Title = _pgTitle,
+            Caption = string.IsNullOrWhiteSpace(_pgCaption) ? null : _pgCaption,
+            Expiry = _pgExpiry,
+            Actions = _pgWithActions
+                ?
+                [
+                    new ToastAction
+                    {
+                        Label = "Undo",
+                        Style = ToastActionStyle.Primary,
+                        OnClick = () => Toasts.Success("Undone", "Your playground action ran.", _pgPosition),
+                    },
+                    new ToastAction
+                    {
+                        Label = "Dismiss",
+                        Style = ToastActionStyle.Text,
+                    },
+                ]
+                : null,
+        });
+
 }

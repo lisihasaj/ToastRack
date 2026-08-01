@@ -1,0 +1,44 @@
+@namespace ToastRack.Sample.Components
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+
+<div class="codeblock">
+    <div class="codeblock-bar">
+        <span class="codeblock-label">@Label</span>
+        <button class="codeblock-copy" type="button" @onclick="CopyAsync">
+            @(_copied ? "Copied ✓" : "Copy")
+        </button>
+    </div>
+    <pre class="codeblock-pre"><code>@Code</code></pre>
+</div>
+
+@code {
+
+    /// <summary>The code rendered inside the block and copied to the clipboard.</summary>
+    [Parameter, EditorRequired]
+    public string Code { get; set; } = "";
+
+    /// <summary>Short label shown in the block header, e.g. a file name or language.</summary>
+    [Parameter]
+    public string Label { get; set; } = "C#";
+
+    private bool _copied;
+
+    private async Task CopyAsync()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", Code);
+        }
+        catch (JSException)
+        {
+            return;
+        }
+
+        _copied = true;
+        StateHasChanged();
+        await Task.Delay(1600);
+        _copied = false;
+    }
+
+}

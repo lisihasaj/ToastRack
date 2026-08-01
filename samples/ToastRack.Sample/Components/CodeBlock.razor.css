@@ -1,0 +1,60 @@
+.codeblock {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #16181d;
+    border: 1px solid #2a2d34;
+}
+
+.codeblock-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.875rem;
+    background: #1d2026;
+    border-bottom: 1px solid #2a2d34;
+}
+
+.codeblock-label {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #8b919d;
+}
+
+.codeblock-copy {
+    border: 1px solid #3a3e47;
+    background: transparent;
+    color: #c6cad2;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.25rem 0.625rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.codeblock-copy:hover {
+    background: #2a2d34;
+    color: #ffffff;
+}
+
+.codeblock-pre {
+    margin: 0;
+    padding: 1rem 1.125rem;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 0.8125rem;
+    line-height: 1.65;
+    color: #e6e9ef;
+    tab-size: 4;
+}
+
+.codeblock-pre code {
+    font-family: inherit;
+    color: inherit;
+    background: none;
+}

@@ -1,18 +1,56 @@
-﻿@inherits LayoutComponentBase
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+@inherits LayoutComponentBase
+@implements IDisposable
+@inject DemoState Demo
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+<div class="app-shell @Demo.ThemeClass">
+    <header class="site-header">
+        <div class="site-header-inner">
+            <a class="brand" href="">
+                <span class="brand-mark">🍞</span>
+                <span class="brand-name">ToastRack</span>
+            </a>
+            <nav class="site-nav">
+                <a href="#quick-start">Quick start</a>
+                <a href="#demos">Demos</a>
+                <a href="#theming">Theming</a>
+                <a href="#playground">Playground</a>
+            </nav>
+            <div class="site-links">
+                <a href="https://www.nuget.org/packages/ToastRack" target="_blank" rel="noreferrer">NuGet</a>
+                <a class="site-links-primary" href="https://github.com/lisihasaj/ToastRack" target="_blank" rel="noreferrer">GitHub</a>
+            </div>
         </div>
+    </header>
 
-        <article class="content px-4">
-            @Body
-        </article>
+    <main class="site-main">
+        @Body
     </main>
+
+    <footer class="site-footer">
+        <div class="site-footer-inner">
+            <span>🍞 ToastRack — released under the MIT license.</span>
+            <span>
+                <a href="https://github.com/lisihasaj/ToastRack" target="_blank" rel="noreferrer">GitHub</a>
+                ·
+                <a href="https://www.nuget.org/packages/ToastRack" target="_blank" rel="noreferrer">NuGet</a>
+                ·
+                <a href="https://github.com/lisihasaj/ToastRack/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer">Changelog</a>
+            </span>
+        </div>
+    </footer>
+
+    <ToastRack @key="@RackKey" BoundarySelector="@Demo.BoundarySelector" />
 </div>
 
-<ToastRack BoundarySelector="main" />
+@code {
+
+    private string RackKey => Demo.BoundarySelector ?? "viewport";
+
+    protected override void OnInitialized() => Demo.Changed += OnDemoChanged;
+
+    private void OnDemoChanged() => _ = InvokeAsync(StateHasChanged);
+
+    /// <inheritdoc />
+    public void Dispose() => Demo.Changed -= OnDemoChanged;
+
+}
