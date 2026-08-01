@@ -25,7 +25,7 @@ public class ToastServiceTests
     }
 
     [Fact]
-    public void ShowErrorToast_AddsNonExpiringErrorToast()
+    public void ShowErrorToast_AddsErrorToastWithDefaultExpiry()
     {
         var service = new ToastService();
 
@@ -38,7 +38,8 @@ public class ToastServiceTests
 
         var toast = Assert.Single(service.Toasts);
         Assert.Equal(ToastVariant.Error, toast.Variant);
-        Assert.Equal(DateTimeOffset.MaxValue, toast.ExpiresAt);
+        Assert.NotEqual(DateTimeOffset.MaxValue, toast.ExpiresAt);
+        Assert.True(toast.ExpiresAt <= DateTimeOffset.UtcNow.AddSeconds(5));
     }
 
     [Fact]

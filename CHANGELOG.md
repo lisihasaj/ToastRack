@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-01
+
+### Changed
+
+- Error toasts now follow the same lifecycle as the other non-loading variants: they
+  auto-expire (5-second default, `Expiry` overrides it) and pause on hover. Previously
+  they never auto-expired. Only loading toasts and toasts with actions remain persistent.
+
 ## [0.1.0] - 2026-07-30
 
 ### Added

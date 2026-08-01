@@ -28,13 +28,13 @@ public class ToastServiceExtensionsTests
     }
 
     [Fact]
-    public void Error_ShowsErrorToastThatNeverExpires()
+    public void Error_ShowsErrorToastWithDefaultExpiry()
     {
         _service.Error("Failed");
 
         var toast = Assert.Single(_service.Toasts);
         Assert.Equal(ToastVariant.Error, toast.Variant);
-        Assert.Equal(DateTimeOffset.MaxValue, toast.ExpiresAt);
+        Assert.NotEqual(DateTimeOffset.MaxValue, toast.ExpiresAt);
     }
 
     [Fact]

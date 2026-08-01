@@ -48,7 +48,7 @@ public class ToastOptions
     /// Time in seconds before the toast expires and auto-closes.
     /// For example, a value of <c>4</c> means the toast disappears after 4 seconds.
     /// Leave <c>null</c> to use the default expiry (5 seconds).
-    /// Error toasts and toasts with <see cref="Actions"/> never auto-expire.
+    /// Toasts with <see cref="Actions"/> never auto-expire.
     /// </summary>
     public int? Expiry { get; set; }
 

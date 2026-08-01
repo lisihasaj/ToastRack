@@ -65,8 +65,7 @@ public class ToastService : IToastService
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        var noExpiry = options.Variant is ToastVariant.Error
-            || (options.Actions is not null && options.Actions.Count > 0);
+        var noExpiry = options.Actions is not null && options.Actions.Count > 0;
 
         lock (_gate)
         {
