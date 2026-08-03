@@ -18,6 +18,24 @@ public sealed class DemoState
     /// <summary>CSS class applied around the app that themes the toasts via <c>--toastrack-*</c> variables.</summary>
     public string ThemeClass { get; private set; } = "";
 
+    /// <summary>
+    /// Default position passed to the <c>ToastRack</c> component, applied to toasts that do not
+    /// set <see cref="ToastOptions.Position"/> themselves.
+    /// </summary>
+    public ToastPosition? DefaultPosition { get; private set; }
+
+    /// <summary>
+    /// Default click-to-dismiss behaviour passed to the <c>ToastRack</c> component, applied to
+    /// toasts that do not set <see cref="ToastOptions.CloseByClick"/> themselves.
+    /// </summary>
+    public bool? DefaultCloseByClick { get; private set; }
+
+    /// <summary>
+    /// Default expiry in seconds passed to the <c>ToastRack</c> component, applied to toasts that
+    /// do not set <see cref="ToastOptions.Expiry"/> themselves.
+    /// </summary>
+    public int? DefaultExpiry { get; private set; }
+
     /// <summary>Sets the boundary selector and notifies subscribers.</summary>
     public void SetBoundary(string? selector)
     {
@@ -29,6 +47,15 @@ public sealed class DemoState
     public void SetTheme(string themeClass)
     {
         ThemeClass = themeClass;
+        Changed?.Invoke();
+    }
+
+    /// <summary>Sets the rack-level toast defaults and notifies subscribers.</summary>
+    public void SetRackDefaults(ToastPosition? position, bool? closeByClick, int? expiry)
+    {
+        DefaultPosition = position;
+        DefaultCloseByClick = closeByClick;
+        DefaultExpiry = expiry;
         Changed?.Invoke();
     }
 }

@@ -162,6 +162,57 @@
 
 <section class="demo">
     <div class="demo-head">
+        <h2>Rack-level defaults</h2>
+        <p>
+            Set <code>Position</code>, <code>CloseByClick</code> and <code>Expiry</code> once on the
+            <code>&lt;ToastRack /&gt;</code> component and every toast inherits them. Individual
+            <code>ToastOptions</code> always win — set a property there and it overrides the rack for
+            that toast only. These controls drive the real rack on this page.
+        </p>
+    </div>
+    <div class="demo-body">
+        <div class="demo-panel">
+            <div class="pg-grid">
+                <div class="pg-field">
+                    <label class="field-label" for="rd-position">Default position</label>
+                    <select id="rd-position" class="field" @bind="_rdPosition" @bind:after="ApplyRackDefaults">
+                        <option value="@ToastPosition.TopLeft">Top left</option>
+                        <option value="@ToastPosition.TopCenter">Top center</option>
+                        <option value="@ToastPosition.TopRight">Top right</option>
+                        <option value="@ToastPosition.BottomLeft">Bottom left</option>
+                        <option value="@ToastPosition.BottomCenter">Bottom center</option>
+                        <option value="@ToastPosition.BottomRight">Bottom right</option>
+                    </select>
+                </div>
+                <div class="pg-field">
+                    <label class="field-label" for="rd-expiry">Default expiry (seconds)</label>
+                    <input id="rd-expiry" class="field" type="number" min="1" max="60"
+                           @bind="_rdExpiry" @bind:event="oninput" @bind:after="ApplyRackDefaults" />
+                </div>
+                <div class="pg-field pg-field-check">
+                    <label class="check">
+                        <input type="checkbox" @bind="_rdCloseByClick" @bind:after="ApplyRackDefaults" />
+                        <span>Default: click a toast to dismiss it</span>
+                    </label>
+                </div>
+            </div>
+            <p class="panel-hint">
+                Inherited toasts appear @PositionLabel(_rdPosition), last @_rdExpiry second@(_rdExpiry == 1 ? "" : "s")
+                and @(_rdCloseByClick ? "close" : "do not close") on click.
+            </p>
+            <div class="btn-row">
+                <button class="btn btn-primary" @onclick="ShowInheritedToast">Toast inheriting the rack defaults</button>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-outline" @onclick="ShowOverridingToast">Toast overriding all three</button>
+            </div>
+        </div>
+        <CodeBlock Label="Razor + C#" Code="@RackDefaultsSnippet" />
+    </div>
+</section>
+
+<section class="demo">
+    <div class="demo-head">
         <h2>Action buttons</h2>
         <p>
             Attach primary, outline or text-styled actions. A toast with actions never auto-expires,
@@ -428,6 +479,29 @@
         });
         """;
 
+    private const string RackDefaultsSnippet =
+        """
+        <ToastRack Position="ToastPosition.TopRight"
+                   CloseByClick="false"
+                   Expiry="8" />
+
+        @* Inherits position, click-to-dismiss and expiry from the rack. *@
+        Toasts.ShowSuccessToast(new ToastOptions
+        {
+            Title = "Inherited",
+            Caption = "No position, CloseByClick or Expiry set here.",
+        });
+
+        @* Sets all three, so the rack defaults do not apply to this toast. *@
+        Toasts.ShowInfoToast(new ToastOptions
+        {
+            Title = "Overridden",
+            Position = ToastPosition.BottomLeft,
+            CloseByClick = true,
+            Expiry = 3,
+        });
+        """;
+
     private const string ActionsSnippet =
         """
         Toasts.ShowInfoToast(new ToastOptions
@@ -509,6 +583,10 @@
     private bool _boundaryDemoOpen;
     private string _activeTheme = "";
 
+    private ToastPosition _rdPosition = ToastPosition.TopRight;
+    private bool _rdCloseByClick = true;
+    private int _rdExpiry = 8;
+
     private ToastVariant _pgVariant = ToastVariant.Success;
     private ToastPosition _pgPosition = ToastPosition.BottomRight;
     private string _pgTitle = "Order shipped";
@@ -581,6 +659,28 @@
             Caption = "This toast stays for 15 seconds.",
             Position = _position,
             Expiry = 15,
+        });
+
+    protected override void OnInitialized() => ApplyRackDefaults();
+
+    private void ApplyRackDefaults() =>
+        Demo.SetRackDefaults(_rdPosition, _rdCloseByClick, Math.Clamp(_rdExpiry, 1, 60));
+
+    private void ShowInheritedToast() =>
+        Toasts.ShowSuccessToast(new ToastOptions
+        {
+            Title = "Inherited the rack defaults",
+            Caption = "No position, expiry or click behaviour set on this toast.",
+        });
+
+    private void ShowOverridingToast() =>
+        Toasts.ShowInfoToast(new ToastOptions
+        {
+            Title = "Overrode the rack defaults",
+            Caption = "Bottom left, closes on click, gone in 3 seconds.",
+            Position = ToastPosition.BottomLeft,
+            CloseByClick = true,
+            Expiry = 3,
         });
 
     private static string TitleFor(ToastPosition position)

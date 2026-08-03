@@ -9,6 +9,20 @@ public interface IToastService
     /// <summary>Raised whenever the set of active toasts changes.</summary>
     event Action? ToastsUpdated;
 
+    /// <summary>
+    /// The fallback values applied to toasts that leave the corresponding
+    /// <see cref="ToastOptions"/> property <c>null</c>. Set by the <c>ToastRack</c> component
+    /// from its parameters via <see cref="SetDefaults"/>.
+    /// </summary>
+    ToastDefaults Defaults { get; }
+
+    /// <summary>
+    /// Replaces the defaults applied to subsequently shown toasts. Called by the
+    /// <c>ToastRack</c> component from its parameters; there is normally no need to call it
+    /// directly. Toasts already on screen keep the defaults in force when they were shown.
+    /// </summary>
+    void SetDefaults(ToastDefaults defaults);
+
     /// <summary>The currently active toasts (loading toasts included), in insertion order.</summary>
     IReadOnlyList<ToastItem> Toasts { get; }
 

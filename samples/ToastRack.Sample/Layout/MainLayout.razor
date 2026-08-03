@@ -39,7 +39,11 @@
         </div>
     </footer>
 
-    <ToastRack @key="@RackKey" BoundarySelector="@Demo.BoundarySelector" />
+    <ToastRack @key="@RackKey"
+               BoundarySelector="@Demo.BoundarySelector"
+               Position="@Demo.DefaultPosition"
+               CloseByClick="@Demo.DefaultCloseByClick"
+               Expiry="@Demo.DefaultExpiry" />
 </div>
 
 @code {

@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-08-03
+
+### Added
+
+- `<ToastRack />` gained optional `Position`, `CloseByClick` and `Expiry` parameters that set the
+  defaults for every toast. Individual `ToastOptions` still take precedence, so a toast only falls
+  back to the rack for the properties it leaves unset.
+- `IToastService.Defaults` and `IToastService.SetDefaults(ToastDefaults)`, plus the new
+  `ToastDefaults` model. The `ToastRack` component calls `SetDefaults` from its parameters; there is
+  normally no need to call it directly.
+
+### Changed
+
+- **Breaking:** `ToastOptions.Position` and `ToastOptions.CloseByClick` are now nullable
+  (`ToastPosition?` / `bool?`) and no longer carry their own defaults. Code that *reads* these
+  properties must handle `null`; code that only assigns them is unaffected.
+- **Breaking:** `LoadingToastOptions.Position` is now nullable for the same reason.
+- The `position` parameter of the `Success` / `Warning` / `Error` / `Info` / `Loading` shorthands is
+  now `ToastPosition?` defaulting to `null` instead of `ToastPosition.BottomLeft`. Calls that pass a
+  position explicitly are unaffected; calls that omit it now follow the rack default.
+- Toasts capture the defaults in force when they are shown, so changing the rack's parameters
+  affects subsequent toasts rather than those already on screen.
+
 ## [0.3.0] - 2026-08-01
 
 ### Added
@@ -65,7 +88,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Theming via `--toastrack-*` CSS custom properties.
 - Thread-safe service suitable for Blazor Server and background workers.
 
-[Unreleased]: https://github.com/lisihasaj/ToastRack/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/lisihasaj/ToastRack/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/lisihasaj/ToastRack/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/lisihasaj/ToastRack/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/lisihasaj/ToastRack/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/lisihasaj/ToastRack/releases/tag/v0.1.0
