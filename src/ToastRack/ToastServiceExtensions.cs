@@ -12,7 +12,7 @@ public static class ToastServiceExtensions
         this IToastService service,
         string title,
         string? caption = null,
-        ToastPosition position = ToastPosition.BottomLeft) =>
+        ToastPosition? position = null) =>
         service.ShowSuccessToast(new ToastOptions { Title = title, Caption = caption, Position = position });
 
     /// <summary>Shows a warning toast with the given texts.</summary>
@@ -20,7 +20,7 @@ public static class ToastServiceExtensions
         this IToastService service,
         string title,
         string? caption = null,
-        ToastPosition position = ToastPosition.BottomLeft) =>
+        ToastPosition? position = null) =>
         service.ShowWarningToast(new ToastOptions { Title = title, Caption = caption, Position = position });
 
     /// <summary>Shows an error toast with the given texts.</summary>
@@ -28,7 +28,7 @@ public static class ToastServiceExtensions
         this IToastService service,
         string title,
         string? caption = null,
-        ToastPosition position = ToastPosition.BottomLeft) =>
+        ToastPosition? position = null) =>
         service.ShowErrorToast(new ToastOptions { Title = title, Caption = caption, Position = position });
 
     /// <summary>Shows an info toast with the given texts.</summary>
@@ -36,7 +36,7 @@ public static class ToastServiceExtensions
         this IToastService service,
         string title,
         string? caption = null,
-        ToastPosition position = ToastPosition.BottomLeft) =>
+        ToastPosition? position = null) =>
         service.ShowInfoToast(new ToastOptions { Title = title, Caption = caption, Position = position });
 
     /// <summary>
@@ -50,7 +50,7 @@ public static class ToastServiceExtensions
         string title,
         string? caption = null,
         bool showProgress = false,
-        ToastPosition position = ToastPosition.BottomLeft) =>
+        ToastPosition? position = null) =>
         service.ShowLoadingToast(new LoadingToastOptions
         {
             ToastId = toastId,

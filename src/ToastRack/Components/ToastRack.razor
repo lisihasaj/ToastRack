@@ -30,11 +30,32 @@
     /// </summary>
     [Parameter] public string? BoundarySelector { get; set; }
 
+    /// <summary>
+    /// The position used by toasts that leave <see cref="ToastOptions.Position"/> unset.
+    /// Leave <c>null</c> for <see cref="ToastPosition.BottomLeft"/>.
+    /// </summary>
+    [Parameter] public ToastPosition? Position { get; set; }
+
+    /// <summary>
+    /// Whether clicking a toast dismisses it, for toasts that leave
+    /// <see cref="ToastOptions.CloseByClick"/> unset. Leave <c>null</c> for <c>true</c>.
+    /// </summary>
+    [Parameter] public bool? CloseByClick { get; set; }
+
+    /// <summary>
+    /// Time in seconds before a toast that leaves <see cref="ToastOptions.Expiry"/> unset
+    /// auto-closes. Leave <c>null</c> for <c>5</c> seconds.
+    /// </summary>
+    [Parameter] public int? Expiry { get; set; }
+
     private ToastRackJsInterop? _js;
     private BoundaryRect? _boundary;
     private bool _shouldScrollTopGroups;
     private DotNetObjectReference<ToastRack>? _dotNetRef;
     private bool _boundaryObserved;
+    private ToastPosition? _appliedPosition;
+    private bool? _appliedCloseByClick;
+    private int? _appliedExpiry;
 
     private static string PositionClass(ToastPosition position) => position switch
     {
@@ -84,7 +105,32 @@
     {
         _js = new ToastRackJsInterop(JSRuntime);
         _dotNetRef = DotNetObjectReference.Create(this);
+        ApplyDefaults();
         ToastService.ToastsUpdated += OnToastsUpdated;
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (_appliedPosition == Position
+            && _appliedCloseByClick == CloseByClick
+            && _appliedExpiry == Expiry) return;
+
+        ApplyDefaults();
+    }
+
+    private void ApplyDefaults()
+    {
+        _appliedPosition = Position;
+        _appliedCloseByClick = CloseByClick;
+        _appliedExpiry = Expiry;
+
+        var defaults = new ToastDefaults();
+
+        if (Position is { } position) defaults.Position = position;
+        if (CloseByClick is { } closeByClick) defaults.CloseByClick = closeByClick;
+        if (Expiry is { } expiry) defaults.Expiry = expiry;
+
+        ToastService.SetDefaults(defaults);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

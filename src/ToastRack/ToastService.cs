@@ -7,14 +7,39 @@ namespace ToastRack;
 /// </summary>
 public class ToastService : IToastService
 {
-    private const int DefaultExpirySeconds = 5;
     private const int InitialProgressPercentage = 5;
 
     private readonly object _gate = new();
     private readonly List<ToastItem> _toasts = [];
+    private ToastDefaults _defaults = new();
 
     /// <inheritdoc />
     public event Action? ToastsUpdated;
+
+    /// <inheritdoc />
+    public ToastDefaults Defaults
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _defaults;
+            }
+        }
+    }
+
+    /// <inheritdoc />
+    public void SetDefaults(ToastDefaults defaults)
+    {
+        ArgumentNullException.ThrowIfNull(defaults);
+
+        lock (_gate)
+        {
+            _defaults = defaults;
+        }
+
+        NotifyToastsUpdated();
+    }
 
     /// <inheritdoc />
     public IReadOnlyList<ToastItem> Toasts
@@ -48,7 +73,7 @@ public class ToastService : IToastService
             lock (_gate)
             {
                 return _toasts
-                    .GroupBy(t => t.Position)
+                    .GroupBy(t => t.Position ?? _defaults.Position)
                     .OrderBy(g => g.Key)
                     .ToDictionary(
                         g => g.Key,
@@ -70,19 +95,21 @@ public class ToastService : IToastService
         {
             if (options.ToastId != null && _toasts.Any(t => t.ToastId == options.ToastId)) return;
 
+            var expiry = options.Expiry ?? _defaults.Expiry;
+
             var toastItem = new ToastItem
             {
                 ToastId = options.ToastId ?? Guid.NewGuid().ToString(),
                 Variant = options.Variant,
-                Position = options.Position,
+                Position = options.Position ?? _defaults.Position,
                 Icon = options.Icon,
                 Title = options.Title,
                 Caption = options.Caption,
-                CloseByClick = options.CloseByClick,
+                CloseByClick = options.CloseByClick ?? _defaults.CloseByClick,
                 ExpiresAt = noExpiry
                     ? DateTimeOffset.MaxValue
-                    : DateTimeOffset.UtcNow.AddSeconds(options.Expiry ?? DefaultExpirySeconds),
-                Expiry = noExpiry ? null : options.Expiry,
+                    : DateTimeOffset.UtcNow.AddSeconds(expiry),
+                Expiry = noExpiry ? null : expiry,
                 Actions = options.Actions,
                 Fragment = options.Fragment,
             };
@@ -138,7 +165,7 @@ public class ToastService : IToastService
             {
                 ToastId = options.ToastId ?? Guid.NewGuid().ToString(),
                 Variant = ToastVariant.Loading,
-                Position = options.Position,
+                Position = options.Position ?? _defaults.Position,
                 Title = options.Title,
                 Caption = options.Caption,
                 CloseByClick = false,

@@ -14,9 +14,10 @@ public class LoadingToastOptions
     public string? ToastId { get; set; }
 
     /// <summary>
-    /// The screen corner or edge where the loading toast is displayed.
+    /// The screen corner or edge where the loading toast is displayed. Leave <c>null</c> to use
+    /// the default position configured on the <c>ToastRack</c> component.
     /// </summary>
-    public ToastPosition Position { get; set; } = ToastPosition.BottomLeft;
+    public ToastPosition? Position { get; set; }
 
     /// <summary>
     /// The heading text shown at the top of the loading toast.

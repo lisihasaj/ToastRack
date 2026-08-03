@@ -19,9 +19,10 @@ public class ToastOptions
     public ToastVariant Variant { get; set; } = ToastVariant.Success;
 
     /// <summary>
-    /// The screen corner or edge where the toast is displayed.
+    /// The screen corner or edge where the toast is displayed. Leave <c>null</c> to use the
+    /// default position configured on the <c>ToastRack</c> component.
     /// </summary>
-    public ToastPosition Position { get; set; } = ToastPosition.BottomLeft;
+    public ToastPosition? Position { get; set; }
 
     /// <summary>
     /// Optional custom icon rendered in place of the default icon for the <see cref="Variant"/>.
@@ -40,14 +41,15 @@ public class ToastOptions
     public string? Caption { get; set; }
 
     /// <summary>
-    /// Whether clicking the toast dismisses it. Defaults to <c>true</c>.
+    /// Whether clicking the toast dismisses it. Leave <c>null</c> to use the default
+    /// configured on the <c>ToastRack</c> component.
     /// </summary>
-    public bool CloseByClick { get; set; } = true;
+    public bool? CloseByClick { get; set; }
 
     /// <summary>
     /// Time in seconds before the toast expires and auto-closes.
     /// For example, a value of <c>4</c> means the toast disappears after 4 seconds.
-    /// Leave <c>null</c> to use the default expiry (5 seconds).
+    /// Leave <c>null</c> to use the default expiry configured on the <c>ToastRack</c> component.
     /// Toasts with <see cref="Actions"/> never auto-expire.
     /// </summary>
     public int? Expiry { get; set; }

@@ -13,6 +13,7 @@ A lightweight, **dependency-free** toast notification library for Blazor — Web
 - 🔘 Action buttons (undo / retry / …) — toasts with actions never auto-expire
 - ⏸ Hover to pause the expiry timer
 - 📍 Six stacking positions (all four corners plus top/bottom center), plus an optional **boundary element**: anchor toasts to your content area (e.g. next to a sidebar) instead of the viewport, tracked automatically with a `ResizeObserver`
+- ⚙️ **App-wide defaults** for position, click-to-dismiss and expiry, set once on `<ToastRack />` and overridable per toast
 - 🎨 Fully themable via `--toastrack-*` CSS custom properties
 - 🧩 Custom icon or fully custom toast content via `RenderFragment`
 - ♿ `role="status"` / `role="alert"`, progressbar ARIA attributes, `prefers-reduced-motion` support
@@ -124,6 +125,47 @@ Toasts.ShowToast(new ToastOptions
 });
 ```
 
+### Set defaults for every toast
+
+`<ToastRack />` takes optional `Position`, `CloseByClick` and `Expiry` parameters. Whatever you set
+becomes the default for every toast in the app:
+
+```razor
+<ToastRack Position="ToastPosition.TopRight"
+           CloseByClick="false"
+           Expiry="8" />
+```
+
+The matching `ToastOptions` properties are nullable and always take precedence — set one and it
+overrides the rack for that toast only:
+
+```csharp
+// Top right, sticky on click, 8 seconds — all inherited from the rack.
+Toasts.Success("Saved", "Your changes were saved successfully.");
+
+// Overrides all three for this toast alone.
+Toasts.ShowInfoToast(new ToastOptions
+{
+    Title = "Just this one",
+    Position = ToastPosition.BottomLeft,
+    CloseByClick = true,
+    Expiry = 3,
+});
+```
+
+Leave a parameter off and the built-in default applies: `BottomLeft`, `CloseByClick` true, and a
+5-second expiry.
+
+> **Upgrading to 0.4.0 from 0.3.0 or earlier.** To make this inheritance possible, `ToastOptions.Position`,
+> `ToastOptions.CloseByClick` and `LoadingToastOptions.Position` became nullable
+> (`ToastPosition?` / `bool?`) and no longer carry their own defaults, and the `position` parameter
+> of the `Success` / `Warning` / `Error` / `Info` / `Loading` shorthands is now `ToastPosition?`
+> defaulting to `null`. Code that **assigns** these properties or passes a position explicitly keeps
+> working unchanged and keeps the same behavior. Code that **reads** them — e.g.
+> `if (options.CloseByClick)` or `switch (options.Position)` — must now handle `null`, which means
+> "use the rack default". Omitting the position argument now follows the rack instead of always
+> landing on `BottomLeft`.
+
 ### Anchor toasts to a content area instead of the viewport
 
 If your app has a fixed sidebar or header, anchor toasts to the main content element.
@@ -202,10 +244,29 @@ in your app's CSS (e.g. on `:root`):
 | `RemoveToast(string)` / `RemoveToast(ToastItem)` | Remove programmatically |
 | `Toasts` / `LoadingToasts` / `ToastsByPosition` | Current state (read-only snapshots) |
 | `ToastsUpdated` | Raised on every change |
+| `Defaults` | The `ToastDefaults` currently applied to toasts that leave a property unset |
+| `SetDefaults(ToastDefaults)` | Replaces those defaults — called by `<ToastRack />` from its parameters, so you rarely call it yourself |
+
+`<ToastRack />` parameters (all optional):
+
+| Parameter | Default | Purpose |
+|---|---|---|
+| `BoundarySelector` | `null` (viewport) | CSS selector of the element toasts are anchored within |
+| `Position` | `BottomLeft` | Position for toasts that leave `ToastOptions.Position` unset |
+| `CloseByClick` | `true` | Click-to-dismiss for toasts that leave `ToastOptions.CloseByClick` unset |
+| `Expiry` | `5` | Expiry in seconds for toasts that leave `ToastOptions.Expiry` unset |
 
 Behavior notes:
 
-- Toasts with actions never auto-expire; everything else defaults to 5 seconds (`Expiry` overrides it).
+- Toasts with actions never auto-expire; everything else uses the rack's `Expiry` default
+  (5 seconds unless set), which `ToastOptions.Expiry` overrides per toast.
+- `ToastOptions.Position`, `CloseByClick` and `Expiry` are nullable: leave one `null` to inherit the
+  matching `<ToastRack />` parameter, or set it to override the rack for that toast.
+  `LoadingToastOptions.Position` is nullable and inherits the same way.
+- Each toast captures the defaults in force at the moment it is shown. Changing the rack's
+  parameters therefore affects subsequent toasts, not those already on screen.
+- The values behind the rack's parameters live on `ToastDefaults`, reachable as
+  `IToastService.Defaults` if you need to read the effective default.
 - Hovering a toast pauses its expiry timer (except loading toasts, which don't expire).
 - The service is thread-safe, so background work can show and update toasts (in Blazor Server too).
 
@@ -244,7 +305,6 @@ produces package version `1.2.3`. Releases are published to NuGet.org by the
 ## Roadmap
 
 - Localization of default resolve titles/captions
-- Optional global defaults (default expiry, default position) via `AddToastRack(options => ...)`
 
 ## Contributing
 

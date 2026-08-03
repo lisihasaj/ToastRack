@@ -237,7 +237,7 @@
 
     private void HandleBodyClose()
     {
-        if (!Item.CloseByClick) return;
+        if (Item.CloseByClick is false) return;
         HandleClose();
     }
 
