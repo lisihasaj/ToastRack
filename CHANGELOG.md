@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-08-06
+
 ### Changed
 
 - The package icon is now `toast.png`, replacing the previous `icon.png`.
@@ -96,7 +98,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Theming via `--toastrack-*` CSS custom properties.
 - Thread-safe service suitable for Blazor Server and background workers.
 
-[Unreleased]: https://github.com/lisihasaj/ToastRack/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/lisihasaj/ToastRack/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/lisihasaj/ToastRack/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/lisihasaj/ToastRack/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/lisihasaj/ToastRack/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/lisihasaj/ToastRack/compare/v0.1.0...v0.2.0
