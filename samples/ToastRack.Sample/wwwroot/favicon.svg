@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="ToastRack">
-    <rect width="64" height="64" rx="14" fill="#9a3412" />
-    <path d="M16 27c0-6.6 7.2-11 16-11s16 4.4 16 11v18a4 4 0 0 1-4 4H20a4 4 0 0 1-4-4V27Z" fill="#fde68a" />
-    <path d="M16 27c0-6.6 7.2-11 16-11s16 4.4 16 11c0 3-2.6 5-5.6 5-2.4 0-3.9-1.2-5.2-2.4-1.2-1.1-2.3-2.1-4-2.1s-2.8 1-4 2.1C27.9 30.8 26.4 32 24 32c-3 0-8-2-8-5Z" fill="#f59e0b" />
-    <rect x="24" y="38" width="16" height="3.5" rx="1.75" fill="#9a3412" opacity=".5" />
-</svg>

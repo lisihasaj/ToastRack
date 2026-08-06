@@ -14,11 +14,11 @@
     <Description>A lightweight, dependency-free toast notification library for Blazor (WebAssembly and Server). Success/warning/error/info variants, loading toasts with determinate progress, action buttons, hover-to-pause, stacking per position, custom content, and full CSS-variable theming.</Description>
     <PackageTags>blazor;toast;toaster;notification;notifications;snackbar;components;webassembly;wasm;blazor-server</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/lisihasaj/ToastRack</PackageProjectUrl>
+    <PackageProjectUrl>https://lisihasaj.github.io/ToastRack/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/lisihasaj/ToastRack</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageIcon>icon.png</PackageIcon>
+    <PackageIcon>toast.png</PackageIcon>
     <PackageReleaseNotes>See https://github.com/lisihasaj/ToastRack/blob/main/CHANGELOG.md</PackageReleaseNotes>
   </PropertyGroup>
 
@@ -60,7 +60,7 @@
 
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
-    <None Include="icon.png" Pack="true" PackagePath="\" />
+    <None Include="toast.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>

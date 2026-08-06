@@ -4,18 +4,18 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ToastRack — toast notifications for Blazor</title>
-    <meta name="description" content="ToastRack — a lightweight, dependency-free toast notification library for Blazor WebAssembly and Server. Live demo and copy-paste examples." />
+    <title>ToastRack — Toast Notifications for Blazor</title>
+    <meta name="description" content="Free, dependency-free toast notifications for Blazor WebAssembly and Server. Loading and progress toasts, six positions, action buttons and CSS theming." />
     <meta name="author" content="lisihasaj" />
-    <meta name="keywords" content="Blazor, toast, notifications, snackbar, WebAssembly, Blazor Server, .NET, C#, ToastRack" />
     <meta name="color-scheme" content="light" />
     <meta name="theme-color" content="#9a3412" />
     <base href="/" />
     <link rel="canonical" href="https://lisihasaj.github.io/ToastRack/" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="ToastRack" />
-    <meta property="og:title" content="ToastRack — toast notifications for Blazor" />
+    <meta property="og:title" content="ToastRack — Toast Notifications for Blazor" />
     <meta property="og:description" content="A lightweight, dependency-free toast notification library for Blazor WebAssembly and Server. Try every variant, position and loading flow in the browser." />
     <meta property="og:url" content="https://lisihasaj.github.io/ToastRack/" />
     <meta property="og:image" content="https://lisihasaj.github.io/ToastRack/social-card.png" />
@@ -26,23 +26,211 @@
     <meta property="og:locale" content="en_US" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="ToastRack — toast notifications for Blazor" />
+    <meta name="twitter:title" content="ToastRack — Toast Notifications for Blazor" />
     <meta name="twitter:description" content="A lightweight, dependency-free toast notification library for Blazor WebAssembly and Server. Try every variant, position and loading flow in the browser." />
     <meta name="twitter:image" content="https://lisihasaj.github.io/ToastRack/social-card.png" />
     <meta name="twitter:image:alt" content="ToastRack — toast notifications for Blazor, shown with success, info and warning toasts." />
 
     <link rel="preload" id="webassembly" />
     <link rel="stylesheet" href="css/app.css" />
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="favicon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
     <link rel="manifest" href="site.webmanifest" />
     <link href="ToastRack.Sample.styles.css" rel="stylesheet" />
+
+    <link rel="preconnect" href="https://www.nuget.org" />
+    <link rel="dns-prefetch" href="https://www.nuget.org" />
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://lisihasaj.github.io/ToastRack/#website",
+          "url": "https://lisihasaj.github.io/ToastRack/",
+          "name": "ToastRack",
+          "description": "A lightweight, dependency-free toast notification library for Blazor WebAssembly and Server.",
+          "inLanguage": "en",
+          "publisher": { "@id": "https://lisihasaj.github.io/ToastRack/#author" }
+        },
+        {
+          "@type": "Person",
+          "@id": "https://lisihasaj.github.io/ToastRack/#author",
+          "name": "lisihasaj",
+          "url": "https://github.com/lisihasaj"
+        },
+        {
+          "@type": "SoftwareSourceCode",
+          "@id": "https://lisihasaj.github.io/ToastRack/#sourcecode",
+          "name": "ToastRack",
+          "description": "A lightweight, dependency-free toast notification library for Blazor — WebAssembly and Server.",
+          "codeRepository": "https://github.com/lisihasaj/ToastRack",
+          "programmingLanguage": ["C#", "Razor"],
+          "runtimePlatform": ".NET 8, .NET 9, .NET 10",
+          "license": "https://opensource.org/licenses/MIT",
+          "author": { "@id": "https://lisihasaj.github.io/ToastRack/#author" }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://lisihasaj.github.io/ToastRack/#software",
+          "name": "ToastRack",
+          "url": "https://lisihasaj.github.io/ToastRack/",
+          "downloadUrl": "https://www.nuget.org/packages/ToastRack",
+          "installUrl": "https://www.nuget.org/packages/ToastRack",
+          "applicationCategory": "DeveloperApplication",
+          "applicationSubCategory": "Blazor UI component library",
+          "operatingSystem": "Cross-platform (.NET 8, .NET 9, .NET 10)",
+          "softwareRequirements": ".NET 8.0 or later; Blazor WebAssembly or Blazor Server",
+          "programmingLanguage": "C#",
+          "license": "https://opensource.org/licenses/MIT",
+          "image": "https://lisihasaj.github.io/ToastRack/social-card.png",
+          "screenshot": "https://lisihasaj.github.io/ToastRack/social-card.png",
+          "author": { "@id": "https://lisihasaj.github.io/ToastRack/#author" },
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "featureList": [
+            "Success, warning, error and info toast variants with inline SVG icons",
+            "Loading toasts with indeterminate spinner or determinate progress circle",
+            "Action buttons such as undo and retry",
+            "Six stacking positions plus an element-anchored boundary",
+            "App-wide defaults for position, click-to-dismiss and expiry",
+            "Full theming via --toastrack-* CSS custom properties",
+            "Custom icons and fully custom toast content via RenderFragment",
+            "Accessible by default with role=status, role=alert and reduced-motion support"
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://lisihasaj.github.io/ToastRack/#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "How do I add toast notifications to a Blazor app?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Install the ToastRack NuGet package with 'dotnet add package ToastRack', register the service in Program.cs with builder.Services.AddToastRack(), place a single <ToastRack /> component in your layout, then inject IToastService and call Toasts.Success(\"Saved\") from anywhere in your app."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Does ToastRack work with both Blazor WebAssembly and Blazor Server?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. ToastRack supports Blazor WebAssembly and Blazor Server on .NET 8, 9 and 10. The toast service is thread-safe, so background work can show and update toasts in Blazor Server too."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Does ToastRack require any JavaScript libraries or CSS frameworks?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "No. ToastRack is dependency-free. It ships no icon fonts, no JavaScript packages and no CSS framework — icons are inline SVG and styles ship as scoped CSS in a single NuGet package."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How do I show a loading toast with a progress bar in Blazor?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Call Toasts.Loading(\"upload\", \"Uploading...\", showProgress: true) to show a loading toast with a determinate progress circle, update it with Toasts.Progress(\"upload\", 60) as the work advances, then replace it with a result toast using Toasts.Resolve(\"upload\", ToastVariant.Success, \"Uploaded\")."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I change where Blazor toasts appear on screen?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. ToastRack supports six stacking positions — top left, top center, top right, bottom left, bottom center and bottom right. Set a default for the whole app with <ToastRack Position=\"ToastPosition.TopRight\" /> or override it per toast. You can also anchor toasts to a content element instead of the viewport using BoundarySelector."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How do I customize the look of ToastRack toasts?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Every color, size, radius and font is a --toastrack-* CSS custom property with a sensible default. Override any of them in your own CSS, for example on :root, to restyle toasts without touching C#. You can also supply a custom icon or replace the whole toast body with a RenderFragment."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is ToastRack free and open source?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. ToastRack is free and released under the MIT license. The source code is on GitHub at github.com/lisihasaj/ToastRack and the package is published on NuGet.org."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
     <script type="importmap"></script>
 </head>
 
 <body>
     <div id="app">
+        <!--
+            Pre-render fallback. Blazor WebAssembly replaces everything inside #app once the
+            runtime boots, so this markup is what crawlers, link previews and users on a slow
+            connection see in the meantime. Keep it in sync with the headings in Pages/Home.razor.
+        -->
+        <div class="prerender">
+            <header class="prerender-header">
+                <span class="prerender-brand"><img src="toast.png" alt="" width="20" height="20" class="prerender-brand-icon"> ToastRack</span>
+            </header>
+            <main>
+                <h1>Delightful toast notifications for Blazor</h1>
+                <p>
+                    ToastRack is a lightweight, dependency-free toast notification library for
+                    Blazor WebAssembly and Blazor Server, supporting .NET 8, 9 and 10. It offers six
+                    stacking positions, loading and progress toasts, action buttons and full CSS
+                    theming — with accessibility built in and no JavaScript packages to install.
+                </p>
+                <p><code>dotnet add package ToastRack</code></p>
+
+                <h2>Features</h2>
+                <ul>
+                    <li><strong>Lightweight &amp; dependency-free</strong> — no icon fonts, no JS libraries, no CSS frameworks. One NuGet package with a thread-safe service that works in WebAssembly and Server.</li>
+                    <li><strong>Loading &amp; progress toasts</strong> — indeterminate spinner or a determinate progress circle, resolved in place into a success, error, warning or info toast when the work finishes.</li>
+                    <li><strong>Action buttons</strong> — undo, retry or any custom action. Toasts with actions never auto-expire, so users always have time to respond.</li>
+                    <li><strong>Six positions plus a boundary</strong> — all four corners plus top and bottom center, anchored to the viewport or to any element of your app via a ResizeObserver-tracked boundary.</li>
+                    <li><strong>Themable end to end</strong> — every color, size, radius and font is a <code>--toastrack-*</code> CSS custom property with a sensible default.</li>
+                    <li><strong>Custom content</strong> — swap the icon or replace the whole toast body with any RenderFragment.</li>
+                    <li><strong>Accessible by default</strong> — <code>role="status"</code> / <code>role="alert"</code>, progressbar ARIA attributes and <code>prefers-reduced-motion</code> support out of the box.</li>
+                    <li><strong>Considerate timing</strong> — hovering a toast pauses its expiry timer, duplicate ids are deduplicated, and everything can be removed programmatically.</li>
+                </ul>
+
+                <h2>Quick start</h2>
+                <p>Three steps and you are showing toasts in your Blazor app.</p>
+                <ol>
+                    <li>Register the service in <code>Program.cs</code>: <code>builder.Services.AddToastRack();</code></li>
+                    <li>Place <code>&lt;ToastRack /&gt;</code> once in your layout, e.g. <code>MainLayout.razor</code>.</li>
+                    <li>Inject <code>IToastService</code> and call <code>Toasts.Success("Saved", "Your changes were saved successfully.");</code> from anywhere.</li>
+                </ol>
+
+                <h2>Interactive demos</h2>
+                <p>
+                    The live demo drives every feature in the browser: toast variants, six stacking
+                    positions, rack-level defaults, action buttons, the loading &rarr; progress &rarr;
+                    resolve flow, custom icons and fragments, deduplication, content-area boundaries,
+                    theming and a playground that generates the exact C# for the toast you compose.
+                </p>
+
+                <h2>Links</h2>
+                <ul>
+                    <li><a href="https://www.nuget.org/packages/ToastRack">ToastRack on NuGet</a></li>
+                    <li><a href="https://github.com/lisihasaj/ToastRack">Source code on GitHub</a></li>
+                    <li><a href="https://github.com/lisihasaj/ToastRack/blob/main/CHANGELOG.md">Changelog</a></li>
+                </ul>
+            </main>
+            <p class="prerender-loading" role="status">Loading the interactive demo…</p>
+        </div>
+
         <svg class="loading-progress">
             <circle r="40%" cx="50%" cy="50%" />
             <circle r="40%" cx="50%" cy="50%" />

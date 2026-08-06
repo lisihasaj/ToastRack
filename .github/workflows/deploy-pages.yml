@@ -58,8 +58,21 @@ jobs:
 
       # Pages has no SPA rewrite rule, so a deep link or refresh would hard-404.
       # Serving the app shell as 404.html hands routing back to the Blazor router.
+      #
+      # The fallback is served for every unknown URL, so it must not be indexable:
+      # without this, each bad URL would return a page canonicalising to the
+      # homepage, which search engines read as a soft 404. Marking it noindex and
+      # dropping the canonical keeps the real homepage the only indexed URL.
       - name: Add SPA fallback
-        run: cp publish/wwwroot/index.html publish/wwwroot/404.html
+        run: |
+          sed -e 's|<meta name="robots" content="[^"]*" />|<meta name="robots" content="noindex, follow" />|' \
+              -e '\|<link rel="canonical"|d' \
+              publish/wwwroot/index.html > publish/wwwroot/404.html
+
+      - name: Verify the SPA fallback is not indexable
+        run: |
+          grep -qF '<meta name="robots" content="noindex, follow" />' publish/wwwroot/404.html
+          ! grep -qF 'rel="canonical"' publish/wwwroot/404.html
 
       - name: Configure Pages
         uses: actions/configure-pages@v6
