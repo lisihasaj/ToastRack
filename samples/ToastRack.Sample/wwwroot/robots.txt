@@ -1,0 +1,13 @@
+# https://lisihasaj.github.io/ToastRack/
+# The site is served from a GitHub Pages sub-path, so every path below is
+# prefixed with /ToastRack/.
+
+User-agent: *
+Allow: /
+
+# The Blazor runtime, framework assemblies and build manifests carry no content
+# worth indexing, and crawling them wastes crawl budget on multi-megabyte files.
+Disallow: /ToastRack/_framework/
+Disallow: /ToastRack/_content/
+
+Sitemap: https://lisihasaj.github.io/ToastRack/sitemap.xml

@@ -1,133 +1,144 @@
 .app-shell {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 .site-header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: rgba(250, 249, 247, 0.85);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(250, 249, 247, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
 }
 
 .site-header-inner {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0.75rem 1.25rem;
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
 }
 
 .brand {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-    color: var(--ink);
-    font-weight: 700;
-    font-size: 1.05rem;
-    letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
 }
 
 .brand-mark {
-    font-size: 1.25rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: block;
+  flex: none;
+}
+
+.footer-mark {
+  width: 1.3em;
+  height: 1.3em;
+  vertical-align: -0.22em;
 }
 
 .site-nav {
-    display: flex;
-    gap: 1.125rem;
-    margin-inline: auto;
+  display: flex;
+  gap: 1.125rem;
+  margin-inline: auto;
 }
 
 .site-nav a {
-    color: var(--muted);
-    text-decoration: none;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: color 0.15s ease;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color 0.15s ease;
 }
 
 .site-nav a:hover {
-    color: var(--ink);
+  color: var(--ink);
 }
 
 .site-links {
-    display: flex;
-    align-items: center;
-    gap: 0.625rem;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
 }
 
 .site-links a {
-    text-decoration: none;
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: var(--ink);
-    padding: 0.375rem 0.75rem;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    transition: border-color 0.15s ease, background 0.15s ease;
+  text-decoration: none;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink);
+  padding: 0.375rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 
 .site-links a:hover {
-    border-color: #cfcac1;
+  border-color: #cfcac1;
 }
 
 .site-links .site-links-primary {
-    background: var(--ink);
-    border-color: var(--ink);
-    color: #ffffff;
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #ffffff;
 }
 
 .site-links .site-links-primary:hover {
-    background: #2b3342;
+  background: #2b3342;
 }
 
 .site-main {
-    flex: 1;
-    width: 100%;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 1.25rem;
+  flex: 1;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
 }
 
 .site-footer {
-    margin-top: 4rem;
-    border-top: 1px solid var(--border);
-    background: var(--surface);
+  margin-top: 4rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
 }
 
 .site-footer-inner {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 1.25rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 1.5rem;
-    justify-content: space-between;
-    font-size: 0.8125rem;
-    color: var(--muted);
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+  color: var(--muted);
 }
 
 .site-footer a {
-    color: var(--muted);
+  color: var(--muted);
 }
 
 .site-footer a:hover {
-    color: var(--ink);
+  color: var(--ink);
 }
 
 @media (max-width: 760px) {
-    .site-nav {
-        display: none;
-    }
+  .site-nav {
+    display: none;
+  }
 
-    .site-header-inner {
-        justify-content: space-between;
-    }
+  .site-header-inner {
+    justify-content: space-between;
+  }
 }

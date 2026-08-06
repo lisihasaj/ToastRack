@@ -1,4 +1,4 @@
-# 🍞 ToastRack
+# <img src="https://raw.githubusercontent.com/lisihasaj/ToastRack/main/src/ToastRack/toast.png" alt="" width="32" align="top" /> ToastRack
 
 [![CI](https://github.com/lisihasaj/ToastRack/actions/workflows/ci.yml/badge.svg)](https://github.com/lisihasaj/ToastRack/actions/workflows/ci.yml)
 [![NuGet](https://img.shields.io/nuget/v/ToastRack.svg)](https://www.nuget.org/packages/ToastRack)
@@ -23,6 +23,8 @@ A lightweight, **dependency-free** toast notification library for Blazor — Web
 ```bash
 dotnet add package ToastRack
 ```
+
+The package is on NuGet.org: **https://www.nuget.org/packages/ToastRack**
 
 Supports .NET 8, 9 and 10.
 

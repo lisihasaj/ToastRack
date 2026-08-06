@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- The package icon is now `toast.png`, replacing the previous `icon.png`.
+- `PackageProjectUrl` now points at the documentation site, https://lisihasaj.github.io/ToastRack/,
+  instead of the GitHub repository. The repository is still linked via `RepositoryUrl`.
+- The README logo uses an absolute image URL so it renders on nuget.org, which does not resolve
+  repository-relative paths.
+
 ## [0.4.0] - 2026-08-03
 
 ### Added

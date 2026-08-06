@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The demo is a single-page app: every section (#quick-start, #demos, #theming,
+  #playground) lives on the one indexable URL below. Fragment URLs are not listed
+  because search engines treat them as the same page.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://lisihasaj.github.io/ToastRack/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>
