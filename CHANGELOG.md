@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-08-06
+
+### Fixed
+
+- The title on nuget.org no longer shows the raw `<img>` tag as literal text. nuget.org strips raw
+  HTML from READMEs, so the logo markup added in 0.4.1 was rendered as text rather than an image —
+  an absolute image URL alone was not sufficient. The package now ships its own README variant with
+  a plain-Markdown heading; the package icon continues to appear beside the title via `PackageIcon`.
+
+### Changed
+
+- The package README is now generated from `README.nuget.md` rather than the repository `README.md`.
+  The packaged variant drops repo-relative links (which do not resolve on nuget.org) in favor of
+  absolute URLs, and omits the Development, Roadmap and Contributing sections, which are only
+  relevant to contributors. The repository README keeps its logo and is unchanged for GitHub readers.
+
 ## [0.4.1] - 2026-08-06
 
 ### Changed
@@ -98,7 +114,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Theming via `--toastrack-*` CSS custom properties.
 - Thread-safe service suitable for Blazor Server and background workers.
 
-[Unreleased]: https://github.com/lisihasaj/ToastRack/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/lisihasaj/ToastRack/compare/v0.4.2...HEAD
+[0.4.2]: https://github.com/lisihasaj/ToastRack/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/lisihasaj/ToastRack/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/lisihasaj/ToastRack/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/lisihasaj/ToastRack/compare/v0.2.0...v0.3.0
