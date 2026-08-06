@@ -59,7 +59,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <!-- The GitHub README uses raw HTML and repo-relative links, neither of which nuget.org
+         supports; README.nuget.md is the packaged variant. -->
+    <None Include="..\..\README.nuget.md" Pack="true" PackagePath="\README.md" />
     <None Include="toast.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
